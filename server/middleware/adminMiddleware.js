@@ -1,4 +1,5 @@
 const ROLES = require("../constants/roles");
+const MESSAGES = require("../constants/messages");
 
 const admin = (req, res, next) => {
   if (req.user && req.user.role === ROLES.ADMIN) {
@@ -6,7 +7,7 @@ const admin = (req, res, next) => {
   }
 
   return res.status(403).json({
-    message: "Admin access required",
+    message: MESSAGES.AUTH.ADMIN_ACCESS_REQUIRED,
   });
 };
 

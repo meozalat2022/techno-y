@@ -1,5 +1,6 @@
 const jwt = require("jsonwebtoken");
 const User = require("../models/User");
+const MESSAGES = require("../constants/messages");
 
 const protect = async (
   req,
@@ -11,7 +12,7 @@ const protect = async (
 
     if (!token) {
       return res.status(401).json({
-        message: "Not authorized",
+        message: MESSAGES.AUTH.NOT_AUTHORIZED,
       });
     }
 
@@ -27,7 +28,7 @@ const protect = async (
     next();
   } catch (error) {
     return res.status(401).json({
-      message: "Invalid token",
+      message: MESSAGES.AUTH.INVALID_TOKEN,
     });
   }
 };

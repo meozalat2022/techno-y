@@ -2,7 +2,8 @@ const User = require("../models/User");
 const generateToken = require("../utils/generateToken");
 const asyncHandler = require("../middleware/asyncHandler");
 const userResponse = require("../utils/userResponse");
-
+const { successResponse } = require("../utils/apiResponse");
+const MESSAGES = require("../constants/messages");
 const setTokenCookie = (res, token) => {
   res.cookie("token", token, {
     httpOnly: true,
@@ -22,6 +23,7 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     phone,
     password,
+    role,
   } = req.body;
 
   const existingUser = await User.findOne({
@@ -31,7 +33,7 @@ const registerUser = asyncHandler(async (req, res) => {
   if (existingUser) {
     res.status(404);
 
-    throw new Error(MESSAGES.AUTH.EMAIL_EXISTS);
+    throw new Error(MESSAGES.AUTH.EMAIL_ALREADY_EXISTS);
   }
 
   const user = await User.create({
@@ -40,6 +42,7 @@ const registerUser = asyncHandler(async (req, res) => {
     email,
     phone,
     password,
+     role: role || ROLES.CUSTOMER,
   });
 
   const token = generateToken(user._id);
@@ -49,7 +52,7 @@ const registerUser = asyncHandler(async (req, res) => {
   return successResponse(
     res,
     userResponse(user),
-    MESSAGES.AUTH.LOGIN_SUCCESS
+    MESSAGES.AUTH.REGISTER_SUCCESS
   );
 
 

@@ -1,18 +1,18 @@
 const MESSAGES = require("../constants/messages");
 
-
 const errorHandler = (err, req, res, next) => {
 
-    let statusCode = res.statusCode === 200
-        ? 500
-        : res.statusCode;
+    let statusCode =
+        res.statusCode === 200
+            ? 500
+            : res.statusCode;
 
     let message = err.message;
 
     // Invalid MongoDB ObjectId
     if (err.name === "CastError") {
         statusCode = 404;
-        message = MESSAGESS.COMMON.RESOURCE_NOT_FOUND;
+        message = MESSAGES.COMMON.RESOURCE_NOT_FOUND;
     }
 
     // Mongoose Validation Error
@@ -35,13 +35,13 @@ const errorHandler = (err, req, res, next) => {
     // Invalid JWT
     if (err.name === "JsonWebTokenError") {
         statusCode = 401;
-        message = MESSAGESS.COMMON.INVALID_TOKEN
+        message = MESSAGES.COMMON.INVALID_TOKEN;
     }
 
     // Expired JWT
     if (err.name === "TokenExpiredError") {
         statusCode = 401;
-        message = "Token expired";
+        message = MESSAGES.COMMON.TOKEN_EXPIRED;
     }
 
     return res.status(statusCode).json({

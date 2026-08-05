@@ -19,10 +19,16 @@ app.use(cookieParser());
 const authRoutes = require("./routes/authRoutes");
 const productRoutes = require("./routes/productRoutes");
 const categoryRoutes = require("./routes/categoryRoutes");
+const orderRoutes = require("./routes/orderRoutes");
+const inventoryRoutes = require("./routes/inventoryRoutes");
+const supplierRoutes = require("./routes/supplierRoutes");
+const purchaseRoutes =
+    require("./routes/purchaseRoutes");
+
 const brandRoutes =
-require("./routes/brandRoutes");
+  require("./routes/brandRoutes");
 const uploadRoutes =
-require("./routes/uploadRoutes");
+  require("./routes/uploadRoutes");
 
 app.use(cors({
   origin: process.env.CLIENT_URL,
@@ -36,26 +42,34 @@ app.use(morgan("dev"));
 app.get("/", (req, res) => {
   res.send("Techno-Y API Running...");
 });
-
+app.use(
+    "/api/purchases",
+    purchaseRoutes
+);
 app.use("/api/auth", authRoutes);
 app.use("/api/products", productRoutes);
 app.use(
-"/api/categories",
-categoryRoutes
+  "/api/categories",
+  categoryRoutes
 );
 app.use(
-"/api/brands",
-brandRoutes
+  "/api/brands",
+  brandRoutes
 );
+app.use("/api/inventory", inventoryRoutes);
 
 app.use(
-"/api/upload",
-uploadRoutes
+  "/api/upload",
+  uploadRoutes
 );
+
+app.use("/api/suppliers", supplierRoutes);
+
+app.use("/api/orders", orderRoutes);
 const PORT = process.env.PORT || 5000;
 
 const errorHandler =
-require("./middleware/errorMiddleware");
+  require("./middleware/errorMiddleware");
 
 
 app.use(errorHandler);

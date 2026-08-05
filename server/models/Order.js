@@ -1,6 +1,11 @@
 const mongoose = require("mongoose");
-const Counter = require("./Counter");
-const ORDER_STATUS = require("../constants/orderStatus");
+// const Counter = require("./Counter");
+// const ORDER_STATUS = require("../constants/orderStatus");
+const ORDER_STATUS =
+  require("../constants/orderStatus");
+  const PAYMENT_METHODS = require("../constants/paymentMethods");
+  const PAYMENT_STATUS = require("../constants/paymentStatus");
+
 const orderItemSchema = new mongoose.Schema(
   {
     product: {
@@ -22,9 +27,16 @@ const orderItemSchema = new mongoose.Schema(
     },
 
     image: {
-      type: String,
-      default: "",
+      url: {
+        type: String,
+        default: "",
+      },
+      publicId: {
+        type: String,
+        default: "",
+      },
     },
+
 
     brand: {
       type: String,
@@ -45,16 +57,45 @@ const orderItemSchema = new mongoose.Schema(
       },
     ],
 
-    price: {
-      type: Number,
-      required: true,
-      min: 0,
+    pricing: {
+      regularPrice: {
+        type: Number,
+        required: true,
+        min: 0,
+      },
+
+      salePrice: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+      finalPrice: {
+        type: Number,
+        required: true,
+        min: 0,
+      },
     },
+
+
 
     quantity: {
       type: Number,
       required: true,
       min: 1,
+    },
+    inventory: {
+
+      stockBefore: {
+        type: Number,
+        default: 0,
+      },
+
+      stockAfter: {
+        type: Number,
+        default: 0,
+      },
+
     },
   },
   {
@@ -130,5 +171,173 @@ const shippingAddressSchema = new mongoose.Schema(
   }
 );
 
+
+
+
+
+//Payment Schema
+const paymentSchema = new mongoose.Schema(
+  {
+    method: {
+      type: String,
+      enum: Object.values(PAYMENT_METHODS),
+      default: PAYMENT_METHODS.COD,
+    },
+
+    status: {
+      type: String,
+      enum: Object.values(PAYMENT_STATUS),
+      default: PAYMENT_STATUS.PENDING,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+//Shipping Schema
+
+const shippingSchema = new mongoose.Schema(
+  {
+    company: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    method: {
+      type: String,
+      default: "Standard",
+      trim: true,
+    },
+
+    cost: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    trackingNumber: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+//total Schema
+
+
+const totalsSchema = new mongoose.Schema(
+  {
+    subtotal: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+
+    discount: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    shipping: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
+    total: {
+      type: Number,
+      required: true,
+      min: 0,
+    },
+  },
+  {
+    _id: false,
+  }
+);
+
+// order Schema
+
+
+const orderSchema = new mongoose.Schema(
+  {
+    orderNumber: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+    },
+
+    customer: {
+      type: customerSchema,
+      required: true,
+    },
+
+    items: {
+      type: [orderItemSchema],
+      required: true,
+      validate: [
+        (items) => items.length > 0,
+        "Order must contain at least one item.",
+      ],
+    },
+
+    shippingAddress: {
+      type: shippingAddressSchema,
+      required: true,
+    },
+
+    payment: {
+      type: paymentSchema,
+      required: true,
+    },
+
+    shipping: {
+      type: shippingSchema,
+      required: true,
+    },
+
+    totals: {
+      type: totalsSchema,
+      required: true,
+    },
+
+    status: {
+      type: String,
+      enum: Object.values(ORDER_STATUS),
+
+      default: ORDER_STATUS.PENDING
+    },
+
+    notes: {
+      customer: {
+        type: String,
+        default: "",
+      },
+
+      admin: {
+        type: String,
+        default: "",
+      },
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// orderSchema.index({ orderNumber: 1 });
+
+orderSchema.index({ status: 1 });
+
+orderSchema.index({ createdAt: -1 });
+
+orderSchema.index({ "customer.email": 1 });
 
 module.exports = mongoose.model("Order", orderSchema);

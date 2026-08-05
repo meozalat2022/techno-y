@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const STOCK_STATUS = require("../constants/stockStatus");
 
 const productSchema = new mongoose.Schema(
   {
@@ -54,13 +55,27 @@ const productSchema = new mongoose.Schema(
 
     stockStatus: {
       type: String,
-      enum: ["in-stock", "out-of-stock"],
-      default: "in-stock",
+      enum: Object.values(STOCK_STATUS),
+      default: STOCK_STATUS.IN_STOCK,
+    },
+    stockQuantity: {
+      type: Number,
+      required: true,
+      default: 0,
+      min: 0,
     },
 
     images: [
       {
-        type: String,
+        url: {
+          type: String,
+          required: true,
+        },
+
+        publicId: {
+          type: String,
+          required: true,
+        },
       },
     ],
 
@@ -120,7 +135,18 @@ const productSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
+    lowStockThreshold: {
+      type: Number,
+      default: 5,
+      min: 0,
+    },
+
+    trackInventory: {
+      type: Boolean,
+      default: true,
+    },
   },
+
   {
     timestamps: true,
   }
