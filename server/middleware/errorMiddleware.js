@@ -1,58 +1,157 @@
-const MESSAGES = require("../constants/messages");
+const MESSAGES =
+    require("../constants/messages");
 
-const errorHandler = (err, req, res, next) => {
+
+const errorHandler = (
+    err,
+    req,
+    res,
+    next
+) => {
 
     let statusCode =
         res.statusCode === 200
             ? 500
             : res.statusCode;
 
-    let message = err.message;
+    let message =
+        err.message;
+
 
     // Invalid MongoDB ObjectId
     if (err.name === "CastError") {
+
         statusCode = 404;
-        message = MESSAGES.COMMON.RESOURCE_NOT_FOUND;
+
+        message =
+            MESSAGES.COMMON
+                .RESOURCE_NOT_FOUND;
+
     }
 
-    // Mongoose Validation Error
-    if (err.name === "ValidationError") {
+
+    // Mongoose validation
+    else if (
+        err.name ===
+        "ValidationError"
+    ) {
+
         statusCode = 400;
-        message = Object.values(err.errors)
-            .map(error => error.message)
-            .join(", ");
+
+        message =
+            Object.values(
+                err.errors
+            )
+                .map(
+                    error =>
+                        error.message
+                )
+                .join(", ");
+
     }
 
-    // Duplicate Key Error
-    if (err.code === 11000) {
+
+    // MongoDB duplicate key
+    else if (
+        err.code === 11000
+    ) {
+
         statusCode = 409;
 
-        const field = Object.keys(err.keyValue)[0];
+        const field =
+            Object.keys(
+                err.keyValue || {}
+            )[0];
 
-        message = `${field} already exists`;
+
+        message =
+            field
+                ? `${field} already exists`
+                : "Resource already exists";
+
     }
 
-    // Invalid JWT
-    if (err.name === "JsonWebTokenError") {
+
+    // JWT
+    else if (
+        err.name ===
+        "JsonWebTokenError"
+    ) {
+
         statusCode = 401;
-        message = MESSAGES.COMMON.INVALID_TOKEN;
+
+        message =
+            MESSAGES.COMMON
+                .INVALID_TOKEN;
+
     }
 
-    // Expired JWT
-    if (err.name === "TokenExpiredError") {
+
+    else if (
+        err.name ===
+        "TokenExpiredError"
+    ) {
+
         statusCode = 401;
-        message = MESSAGES.COMMON.TOKEN_EXPIRED;
+
+        message =
+            MESSAGES.COMMON
+                .TOKEN_EXPIRED;
+
     }
 
-    return res.status(statusCode).json({
-        success: false,
-        message,
-        stack:
-            process.env.NODE_ENV === "production"
-                ? undefined
-                : err.stack,
-    });
+
+    /*
+     * Plain Error objects thrown intentionally
+     * by our business/service layer.
+     */
+    else if (
+        statusCode === 500 &&
+        err.name === "Error"
+    ) {
+
+        if (
+            /not found/i.test(
+                message
+            )
+        ) {
+
+            statusCode = 404;
+
+        } else if (
+            /not authorized|not authorised|administrator access|required admin/i
+                .test(message)
+        ) {
+
+            statusCode = 403;
+
+        } else {
+
+            statusCode = 400;
+
+        }
+
+    }
+
+
+    return res
+        .status(statusCode)
+        .json({
+
+            success: false,
+
+            message,
+
+            stack:
+                process.env.NODE_ENV ===
+                "production"
+                    ? undefined
+                    : err.stack,
+
+        });
 
 };
 
-module.exports = errorHandler;
+
+module.exports =
+    errorHandler;

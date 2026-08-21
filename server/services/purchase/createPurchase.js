@@ -1,26 +1,41 @@
 const mongoose = require("mongoose");
 
-const validatePurchase = require("./validatePurchase");
-const validateSupplier = require("./validateSupplier");
-const validateProducts = require("./validateProducts");
-const buildPurchaseItems = require("./buildPurchaseItems");
-const calculateTotals = require("./calculateTotals");
-const generatePurchaseNumber = require("./generatePurchaseNumber");
-const savePurchase = require("./savePurchase");
+const validatePurchase =
+    require("./validatePurchase");
 
-const createPurchase = async (
+const validateSupplier =
+    require("./validateSupplier");
+
+const validateProducts =
+    require("./validateProducts");
+
+const buildPurchaseItems =
+    require("./buildPurchaseItems");
+
+const calculateTotals =
+    require("./calculateTotals");
+
+const generatePurchaseNumber =
+    require("./generatePurchaseNumber");
+
+const savePurchase =
+    require("./savePurchase");
+
+const createPurchase = async ({
     purchaseData,
-    user
-) => {
+    user,
+}) => {
 
     const session =
         await mongoose.startSession();
 
-    session.startTransaction();
-
     try {
 
-        validatePurchase(purchaseData);
+        await session.startTransaction();
+
+        validatePurchase(
+            purchaseData
+        );
 
         await validateSupplier(
             purchaseData.supplier
@@ -32,10 +47,12 @@ const createPurchase = async (
             );
 
         const purchaseItems =
-            buildPurchaseItems(
-                purchaseData.items,
-                products
-            );
+            buildPurchaseItems({
+                items:
+                    purchaseData.items,
+
+                products,
+            });
 
         const totals =
             calculateTotals(
@@ -48,27 +65,28 @@ const createPurchase = async (
             );
 
         const purchase =
-            await savePurchase(
+    await savePurchase({
 
-                purchaseNumber,
+        purchaseNumber,
 
-                purchaseData.supplier,
+        supplier:
+            purchaseData.supplier,
 
-                purchaseItems,
+        items:
+            purchaseItems,
 
-                totals,
+        totals,
 
-                user._id,
+        createdBy:
+            user._id,
 
-                session
+        session,
 
-            );
+    });
 
         await session.commitTransaction();
 
         return purchase;
-
-        await session.commitTransaction();
 
     } catch (error) {
 
@@ -78,7 +96,7 @@ const createPurchase = async (
 
     } finally {
 
-        session.endSession();
+        await session.endSession();
 
     }
 

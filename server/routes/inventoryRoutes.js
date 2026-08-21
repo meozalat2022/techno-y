@@ -1,22 +1,45 @@
-const express = require("express");
+const express =
+    require("express");
 
 const {
-    getInventoryHistory, adjustStock
-} = require("../controllers/inventoryController");
-const { protect: authMiddleware } = require("../middleware/authMiddleware");
+    getInventoryHistory,
+    adjustStock,
+} =
+    require(
+        "../controllers/inventoryController"
+    );
+
+const {
+    protect,
+} =
+    require(
+        "../middleware/authMiddleware"
+    );
+
+const admin =
+    require(
+        "../middleware/adminMiddleware"
+    );
 
 
-const router = express.Router();
+const router =
+    express.Router();
+
 
 router.get(
     "/product/:productId",
+    protect,
+    admin,
     getInventoryHistory
 );
 
+
 router.post(
     "/adjust",
-    authMiddleware,
+    protect,
+    admin,
     adjustStock
 );
+
 
 module.exports = router;

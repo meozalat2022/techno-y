@@ -1,5 +1,8 @@
-const express = require("express");
-const router = express.Router();
+const express =
+    require("express");
+
+const router =
+    express.Router();
 
 const {
     createOrder,
@@ -9,26 +12,39 @@ const {
     getDashboardStats,
     getMyOrders,
     getMyOrderByNumber,
-} = require("../controllers/orderController");
-const { protect } = require("../middleware/authMiddleware");
+} =
+    require(
+        "../controllers/orderController"
+    );
 
+const {
+    protect,
+} =
+    require(
+        "../middleware/authMiddleware"
+    );
 
+const admin =
+    require(
+        "../middleware/adminMiddleware"
+    );
 
 
 router.get(
     "/",
+    protect,
+    admin,
     getOrders
 );
 
+
 router.get(
     "/dashboard",
+    protect,
+    admin,
     getDashboardStats
 );
 
-router.patch(
-    "/:orderNumber/status",
-    updateOrderStatus
-);
 
 router.get(
     "/my-orders",
@@ -36,17 +52,35 @@ router.get(
     getMyOrders
 );
 
-router.post("/", protect, createOrder);
+
 router.get(
     "/my-orders/:orderNumber",
     protect,
     getMyOrderByNumber
 );
 
+
+router.post(
+    "/",
+    protect,
+    createOrder
+);
+
+
+router.patch(
+    "/:orderNumber/status",
+    protect,
+    admin,
+    updateOrderStatus
+);
+
+
 router.get(
-    
     "/:orderNumber",
+    protect,
+    admin,
     getOrderByNumber
 );
+
 
 module.exports = router;

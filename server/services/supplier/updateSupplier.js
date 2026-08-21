@@ -1,33 +1,73 @@
-const Supplier = require("../../models/Supplier");
-const findDocumentOrThrow = require("../../utils/findDocumentOrThrow");
+const Supplier =
+    require("../../models/Supplier");
 
-const validateSupplier = require("./validateSupplier");
+const findDocumentOrThrow =
+    require("../../utils/findDocumentOrThrow");
 
-const updateSupplier = async (
-    id,
-    supplierData
-) => {
+const validateSupplier =
+    require("./validateSupplier");
 
-    validateSupplier(supplierData);
 
-   const supplier = await findDocumentOrThrow(
-    Supplier,
-    {
-        _id: id,
-        isActive: true,
-    },
-    "Supplier"
-);
-    if (!supplier) {
-        throw new Error("Supplier not found.");
+const updateSupplier = async ({
+    supplierId,
+    supplierData,
+}) => {
+
+    validateSupplier({
+        supplierData,
+        partial: true,
+    });
+
+
+    const supplier =
+        await findDocumentOrThrow(
+            Supplier,
+            {
+                _id: supplierId,
+                isActive: true,
+            },
+            "Supplier"
+        );
+
+
+    const allowedFields = [
+
+        "name",
+
+        "contactPerson",
+
+        "email",
+
+        "phone",
+
+        "address",
+
+        "notes",
+
+    ];
+
+
+    for (const field of allowedFields) {
+
+        if (
+            supplierData[field] !==
+            undefined
+        ) {
+
+            supplier[field] =
+                supplierData[field];
+
+        }
+
     }
 
-    Object.assign(supplier, supplierData);
 
     await supplier.save();
+
 
     return supplier;
 
 };
+
 
 module.exports = updateSupplier;

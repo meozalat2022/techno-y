@@ -1,259 +1,149 @@
-const Product = require("../models/Product");
-const Category = require("../models/Category");
-const Brand = require("../models/Brand");
+const MESSAGES =
+    require("../constants/messages");
 
-const asyncHandler = require("../middleware/asyncHandler");
-const generateUniqueSlug = require("../utils/slug");
+const asyncHandler =
+    require("../middleware/asyncHandler");
 
-const { successResponse } = require("../utils/apiResponse");
-const MESSAGES = require("../constants/messages");
+const productService =
+    require("../services/product");
 
-// ==========================================
-// Create Product
-// ==========================================
-const createProduct = asyncHandler(async (req, res) => {
+const {
+    successResponse,
+} = require("../utils/apiResponse");
 
-    const data = req.body;
 
-    // Generate unique slug
-    data.slug = await generateUniqueSlug(data.title);
+const createProduct =
+    asyncHandler(async (req, res) => {
 
-    // Validate Category
-    const category = await Category.findById(data.category);
+        const product =
+            await productService
+                .createProduct(
+                    req.body
+                );
 
-    if (!category) {
-        res.status(404);
-        throw new Error(MESSAGES.CATEGORY.NOT_FOUND);
-    }
+        return successResponse(
 
-    // Validate Brand
-    const brand = await Brand.findById(data.brand);
+            res,
 
-    if (!brand) {
-        res.status(404);
-        throw new Error(MESSAGES.BRAND.NOT_FOUND);
-    }
+            product,
 
-    // Validate SKU uniqueness
-    const existingSku = await Product.findOne({
-        sku: data.sku,
+            MESSAGES.PRODUCT.CREATED,
+
+            201
+
+        );
+
     });
 
-    if (existingSku) {
-        res.status(409);
-        throw new Error(MESSAGES.PRODUCT.SKU_ALREADY_EXISTS);
-    }
 
-    const product = await Product.create(data);
+const getProducts =
+    asyncHandler(async (req, res) => {
 
-    await product.populate("category", "name");
-    await product.populate("brand", "name");
+        const result =
+            await productService
+                .getProducts(
+                    req.query
+                );
 
-    return successResponse(
-        res,
-        product,
-        MESSAGES.PRODUCT.CREATED,
-        201
-    );
+        return successResponse(
 
-});
+            res,
 
-// ==========================================
-// Get Products
-// ==========================================
-const getProducts = asyncHandler(async (req, res) => {
+            result.products,
 
-    const page = Number(req.query.page) || 1;
-    const limit = Number(req.query.limit) || 12;
+            MESSAGES.PRODUCT
+                .LIST_RETRIEVED,
 
-    const skip = (page - 1) * limit;
+            200,
 
-    const query = {
-        isActive: true,
-    };
+            result.pagination
 
-    if (req.query.search) {
-        query.title = {
-            $regex: req.query.search,
-            $options: "i",
-        };
-    }
-
-    if (req.query.category) {
-        query.category = req.query.category;
-    }
-
-    if (req.query.brand) {
-        query.brand = req.query.brand;
-    }
-
-    if (req.query.featured === "true") {
-        query.featured = true;
-    }
-
-    const totalProducts =
-        await Product.countDocuments(query);
-
-    const products =
-        await Product.find(query)
-            .populate("category", "name")
-            .populate("brand", "name")
-            .sort({
-                createdAt: -1,
-            })
-            .skip(skip)
-            .limit(limit);
-
-    return successResponse(
-        res,
-        products,
-        MESSAGES.PRODUCT.LIST_RETRIEVED,
-        200,
-        {
-            page,
-            limit,
-            total: totalProducts,
-            pages: Math.ceil(totalProducts / limit),
-        }
-    );
-
-});
-
-// ==========================================
-// Get Product By Slug
-// ==========================================
-const getProductBySlug = asyncHandler(async (req, res) => {
-
-    const product = await Product.findOne({
-        slug: req.params.slug,
-        isActive: true,
-    })
-        .populate("category")
-        .populate("brand");
-
-    if (!product) {
-        res.status(404);
-        throw new Error(MESSAGES.PRODUCT.NOT_FOUND);
-    }
-
-    return successResponse(
-        res,
-        product,
-        MESSAGES.PRODUCT.RETRIEVED
-    );
-
-});
-
-// ==========================================
-// Update Product
-// ==========================================
-const updateProduct = asyncHandler(async (req, res) => {
-
-    const product =
-        await Product.findById(req.params.id);
-
-    if (!product) {
-        res.status(404);
-        throw new Error(MESSAGES.PRODUCT.NOT_FOUND);
-    }
-
-    const data = req.body;
-
-    // Generate new slug if title changes
-    if (data.title) {
-        data.slug = await generateUniqueSlug(
-            data.title,
-            req.params.id
         );
-    }
 
-    // Validate Category
-    if (data.category) {
+    });
 
-        const category =
-            await Category.findById(data.category);
 
-        if (!category) {
-            res.status(404);
-            throw new Error(MESSAGES.CATEGORY.NOT_FOUND);
-        }
+const getProductBySlug =
+    asyncHandler(async (req, res) => {
 
-    }
+        const product =
+            await productService
+                .getProductBySlug(
+                    req.params.slug
+                );
 
-    // Validate Brand
-    if (data.brand) {
+        return successResponse(
 
-        const brand =
-            await Brand.findById(data.brand);
+            res,
 
-        if (!brand) {
-            res.status(404);
-            throw new Error(MESSAGES.BRAND.NOT_FOUND);
-        }
+            product,
 
-    }
+            MESSAGES.PRODUCT.RETRIEVED
 
-    // Validate SKU
-    if (data.sku) {
+        );
 
-        const existingSku =
-            await Product.findOne({
-                sku: data.sku,
-                _id: { $ne: req.params.id },
-            });
+    });
 
-        if (existingSku) {
-            res.status(409);
-            throw new Error(MESSAGES.PRODUCT.SKU_ALREADY_EXISTS);
-        }
 
-    }
+const updateProduct =
+    asyncHandler(async (req, res) => {
 
-    Object.assign(product, data);
+        const product =
+            await productService
+                .updateProduct({
 
-    const updatedProduct =
-        await product.save();
+                    productId:
+                        req.params.id,
 
-    await updatedProduct.populate("category", "name");
-    await updatedProduct.populate("brand", "name");
+                    updateData:
+                        req.body,
 
-    return successResponse(
-        res,
-        updatedProduct,
-        MESSAGES.PRODUCT.UPDATED
-    );
+                });
 
-});
+        return successResponse(
 
-// ==========================================
-// Soft Delete Product
-// ==========================================
-const deleteProduct = asyncHandler(async (req, res) => {
+            res,
 
-    const product =
-        await Product.findById(req.params.id);
+            product,
 
-    if (!product) {
-        res.status(404);
-        throw new Error(MESSAGES.PRODUCT.NOT_FOUND);
-    }
+            MESSAGES.PRODUCT.UPDATED
 
-    product.isActive = false;
+        );
 
-    await product.save();
+    });
 
-    return successResponse(
-        res,
-        null,
-        MESSAGES.PRODUCT.DELETED
-    );
 
-});
+const deleteProduct =
+    asyncHandler(async (req, res) => {
+
+        await productService
+            .deleteProduct(
+                req.params.id
+            );
+
+        return successResponse(
+
+            res,
+
+            null,
+
+            MESSAGES.PRODUCT.DELETED
+
+        );
+
+    });
+
 
 module.exports = {
+
     createProduct,
+
     getProducts,
+
     getProductBySlug,
+
     updateProduct,
+
     deleteProduct,
+
 };

@@ -1,28 +1,32 @@
-const calculateTotals = (orderItems) => {
+const calculateTotals = ({
+    orderItems,
+}) => {
 
-    const subtotal = orderItems.reduce(
+    const subtotal =
+        orderItems.reduce(
+            (sum, item) =>
+                sum +
+                (
+                    item.pricing.finalPrice *
+                    item.quantity
+                ),
+            0
+        );
 
-        (sum, item) =>
-            sum + (item.pricing.finalPrice * item.quantity),
-
-        0
-
-    );
-
-    const shippingCost = 0;
+    const shipping = 0;
 
     const discount = 0;
 
     const total =
         subtotal +
-        shippingCost -
+        shipping -
         discount;
 
     return {
 
         subtotal,
 
-        shippingCost,
+        shipping,
 
         discount,
 

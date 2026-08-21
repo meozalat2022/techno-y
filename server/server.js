@@ -30,6 +30,16 @@ const brandRoutes =
 const uploadRoutes =
   require("./routes/uploadRoutes");
 
+  const customerReturnRoutes =
+    require(
+        "./routes/customerReturnRoutes"
+    );
+
+    const supplierReturnRoutes =
+    require(
+        "./routes/supplierReturnRoutes"
+    );
+
 app.use(cors({
   origin: process.env.CLIENT_URL,
   credentials: true,
@@ -66,8 +76,31 @@ app.use(
 app.use("/api/suppliers", supplierRoutes);
 
 app.use("/api/orders", orderRoutes);
+app.use(
+    "/api/customer-returns",
+    customerReturnRoutes
+);
+
+app.use(
+    "/api/supplier-returns",
+    supplierReturnRoutes
+);
 const PORT = process.env.PORT || 5000;
 
+app.use(
+    (req, res) => {
+
+        res.status(404).json({
+
+            success: false,
+
+            message:
+                "Route not found",
+
+        });
+
+    }
+);
 const errorHandler =
   require("./middleware/errorMiddleware");
 

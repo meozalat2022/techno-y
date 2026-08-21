@@ -1,71 +1,110 @@
-const bcrypt = require("bcryptjs");
-const mongoose = require("mongoose");
-const ROLES = require("../constants/roles");
-const userSchema = new mongoose.Schema(
-  {
-    firstName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+const bcrypt =
+    require("bcryptjs");
 
-    lastName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+const mongoose =
+    require("mongoose");
 
-    email: {
-      type: String,
-      required: true,
-      unique: true,
-      lowercase: true,
-      trim: true,
-    },
+const ROLES =
+    require("../constants/roles");
 
-    password: {
-      type: String,
-      required: true,
-    },
 
-    phone: {
-      type: String,
-      default: "",
-    },
+const userSchema =
+    new mongoose.Schema(
+        {
 
-  role: {
-    type: String,
-    enum: Object.values(ROLES),
-    default: ROLES.CUSTOMER,
-},
+            firstName: {
+                type: String,
+                required: true,
+                trim: true,
+            },
 
-    isActive: {
-      type: Boolean,
-      default: true,
-    },
-  },
-  {
-    timestamps: true,
-  }
+            lastName: {
+                type: String,
+                required: true,
+                trim: true,
+            },
+
+            email: {
+                type: String,
+                required: true,
+                unique: true,
+                lowercase: true,
+                trim: true,
+            },
+
+            password: {
+                type: String,
+                required: true,
+            },
+
+            phone: {
+                type: String,
+                default: "",
+            },
+
+            role: {
+                type: String,
+                enum:
+                    Object.values(ROLES),
+                default:
+                    ROLES.CUSTOMER,
+            },
+
+            isActive: {
+                type: Boolean,
+                default: true,
+            },
+
+        },
+        {
+            timestamps: true,
+        }
+    );
+
+
+userSchema.pre(
+    "save",
+    async function () {
+
+        if (
+            !this.isModified(
+                "password"
+            )
+        ) {
+            return;
+        }
+
+
+        const salt =
+            await bcrypt.genSalt(10);
+
+
+        this.password =
+            await bcrypt.hash(
+                this.password,
+                salt
+            );
+
+    }
 );
 
-userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) {
-    next();
-  }
 
-  const salt = await bcrypt.genSalt(10);
+userSchema.methods
+    .matchPassword =
+    async function (
+        enteredPassword
+    ) {
 
-  this.password = await bcrypt.hash(this.password, salt);
-});
+        return bcrypt.compare(
+            enteredPassword,
+            this.password
+        );
 
-userSchema.methods.matchPassword = async function (
-  enteredPassword
-) {
-  return await bcrypt.compare(
-    enteredPassword,
-    this.password
-  );
-};
+    };
 
-module.exports = mongoose.model("User", userSchema);
+
+module.exports =
+    mongoose.model(
+        "User",
+        userSchema
+    );

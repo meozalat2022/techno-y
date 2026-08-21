@@ -1,3 +1,6 @@
+const MESSAGES =
+    require("../../constants/messages");
+
 const validateAdjustment = ({
     productId,
     quantity,
@@ -6,12 +9,17 @@ const validateAdjustment = ({
 }) => {
 
     if (!productId) {
-        throw new Error("Product ID is required.");
+        throw new Error(
+            MESSAGES.VALIDATION.REQUIRED_FIELD("Product ID")
+        );
     }
 
-    if (!Number.isFinite(quantity) || quantity <= 0) {
+    if (
+        !Number.isFinite(quantity) ||
+        quantity <= 0
+    ) {
         throw new Error(
-            "Quantity must be greater than zero."
+            MESSAGES.VALIDATION.MUST_BE_GREATER_THAN_ZERO("Quantity")
         );
     }
 
@@ -20,13 +28,13 @@ const validateAdjustment = ({
         operation !== "decrease"
     ) {
         throw new Error(
-            "Operation must be increase or decrease."
+            MESSAGES.INVENTORY.OPERATION_REQUIRED
         );
     }
 
     if (!reason?.trim()) {
         throw new Error(
-            "Adjustment reason is required."
+            MESSAGES.INVENTORY.ADJUSTMENT_REASON_REQUIRED
         );
     }
 

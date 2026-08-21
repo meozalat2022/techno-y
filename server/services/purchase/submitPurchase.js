@@ -1,10 +1,18 @@
-const Purchase = require("../../models/Purchase");
+const Purchase =
+    require("../../models/Purchase");
 
-const findDocumentOrThrow = require("../../utils/findDocumentOrThrow");
+const findDocumentOrThrow =
+    require("../../utils/findDocumentOrThrow");
 
-const canSubmitPurchase = require("./canSubmitPurchase");
+const canSubmitPurchase =
+    require("./canSubmitPurchase");
 
-const PURCHASE_STATUS = require("../../constants/purchaseStatus");
+const PURCHASE_STATUS =
+    require("../../constants/purchaseStatus");
+
+const MESSAGES =
+    require("../../constants/messages");
+
 
 const submitPurchase = async (purchaseId) => {
 
@@ -18,9 +26,11 @@ const submitPurchase = async (purchaseId) => {
         );
 
     if (!canSubmitPurchase(purchase)) {
+
         throw new Error(
-            "Only draft purchases can be submitted."
+            MESSAGES.PURCHASE.CANNOT_SUBMIT
         );
+
     }
 
     purchase.status =
@@ -31,5 +41,6 @@ const submitPurchase = async (purchaseId) => {
     return purchase;
 
 };
+
 
 module.exports = submitPurchase;

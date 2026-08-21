@@ -1,17 +1,28 @@
-const Supplier = require("../../models/Supplier");
+const Supplier =
+    require("../../models/Supplier");
 
-const validateSupplier = require("./validateSupplier");
+const validateSupplier =
+    require("./validateSupplier");
 
-const createSupplier = async (supplierData) => {
 
-    validateSupplier(supplierData);
+const createSupplier = async (
+    supplierData
+) => {
 
-    const supplier = await Supplier.create({
-        ...supplierData,
+    validateSupplier({
+        supplierData,
     });
+
+
+    const supplier =
+        await Supplier.create({
+            ...supplierData,
+        });
+
 
     return supplier;
 
 };
+
 
 module.exports = createSupplier;

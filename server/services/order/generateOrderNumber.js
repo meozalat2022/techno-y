@@ -1,25 +1,32 @@
-const Counter = require("../../models/Counter");
+const Counter =
+    require("../../models/Counter");
 
-const generateOrderNumber = async (session) => {
 
-    let counter = await Counter.findOne(
-        { name: "order" },
-        null,
-        { session }
-    );
+const generateOrderNumber = async (
+    session
+) => {
 
-    if (!counter) {
+    const counter =
+        await Counter.findOneAndUpdate(
 
-        counter = new Counter({
-            name: "order",
-            sequence: 0,
-        });
+            {
+                name: "order",
+            },
 
-    }
+            {
+                $inc: {
+                    sequence: 1,
+                },
+            },
 
-    counter.sequence += 1;
+            {
+                new: true,
+                upsert: true,
+                session,
+            }
 
-    await counter.save({ session });
+        );
+
 
     return `ORD-${counter.sequence
         .toString()
@@ -27,4 +34,6 @@ const generateOrderNumber = async (session) => {
 
 };
 
-module.exports = generateOrderNumber;
+
+module.exports =
+    generateOrderNumber;

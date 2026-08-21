@@ -1,3 +1,21 @@
 module.exports = {
-    findProducts: require("./findProducts"),
+
+    createProduct:
+        require("./createProduct"),
+
+    getProducts:
+        require("./getProducts"),
+
+    getProductBySlug:
+        require("./getProductBySlug"),
+
+    updateProduct:
+        require("./updateProduct"),
+
+    deleteProduct:
+        require("./deleteProduct"),
+
+    findProducts:
+        require("./findProducts"),
+
 };

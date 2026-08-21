@@ -1,18 +1,27 @@
 module.exports = {
-     // Sales
-    SALE: "sale",
 
-    // Purchasing
-    PURCHASE: "purchase",
+    SALE:
+        "sale",
 
-    // Returns
-    RETURN_IN: "return_in",
-    RETURN_OUT: "return_out",
+    PURCHASE:
+        "purchase",
 
-    // Manual adjustments
-    ADJUSTMENT_IN: "adjustment_in",
-    ADJUSTMENT_OUT: "adjustment_out",
+    ORDER_CANCELLATION:
+        "order_cancellation",
 
-    // Initial inventory
-    INITIAL_STOCK: "initial_stock",
+    RETURN_IN:
+        "return_in",
+
+    RETURN_OUT:
+        "return_out",
+
+    ADJUSTMENT_IN:
+        "adjustment_in",
+
+    ADJUSTMENT_OUT:
+        "adjustment_out",
+
+    INITIAL_STOCK:
+        "initial_stock",
+
 };

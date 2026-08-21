@@ -1,13 +1,22 @@
 const findDocumentOrThrow = async (
     Model,
     filter,
-    entityName
+    entityName,
+    session = null
 ) => {
 
-    const document = await Model.findOne(filter);
+    let query = Model.findOne(filter);
+
+    if (session) {
+        query = query.session(session);
+    }
+
+    const document = await query;
 
     if (!document) {
-        throw new Error(`${entityName} not found.`);
+        throw new Error(
+            `${entityName} not found.`
+        );
     }
 
     return document;

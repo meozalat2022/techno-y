@@ -1,91 +1,164 @@
-const supplierService = require("../services/supplier");
-const asyncHandler = require("../middleware/asyncHandler");
+const MESSAGES =
+    require("../constants/messages");
 
-const createSupplier = asyncHandler(async (req, res) => {
+const asyncHandler =
+    require("../middleware/asyncHandler");
 
-    const supplier = await supplierService.createSupplier(req.body);
+const supplierService =
+    require("../services/supplier");
 
-    res.status(201).json({
-        success: true,
-        message: "Supplier created successfully.",
-        data: supplier,
-    });
+const {
+    successResponse,
+} =
+    require("../utils/apiResponse");
 
-});
 
-const listSuppliers = asyncHandler(async (req, res) => {
+const createSupplier =
+    asyncHandler(async (req, res) => {
 
-    const result = await supplierService.listSuppliers({
+        const supplier =
+            await supplierService
+                .createSupplier(
+                    req.body
+                );
 
-        page: Number(req.query.page) || 1,
 
-        limit: Number(req.query.limit) || 20,
+        return successResponse(
 
-        search: req.query.search || "",
+            res,
 
-    });
+            supplier,
 
-    res.status(200).json({
+            MESSAGES.SUPPLIER.CREATED,
 
-        success: true,
+            201
 
-        data: result.suppliers,
-
-        pagination: result.pagination,
-
-    });
-
-});
-
-const getSupplier = asyncHandler(async (req, res) => {
-
-    const supplier =
-        await supplierService.getSupplier(req.params.id);
-
-    res.status(200).json({
-        success: true,
-        data: supplier,
-    });
-
-});
-
-const updateSupplier = asyncHandler(async (req, res) => {
-
-    const supplier =
-        await supplierService.updateSupplier(
-            req.params.id,
-            req.body
         );
 
-    res.status(200).json({
+    });
 
-        success: true,
 
-        message: "Supplier updated successfully.",
+const listSuppliers =
+    asyncHandler(async (req, res) => {
 
-        data: supplier,
+        const result =
+            await supplierService
+                .listSuppliers({
+
+                    page:
+                        req.query.page,
+
+                    limit:
+                        req.query.limit,
+
+                    search:
+                        req.query.search || "",
+
+                });
+
+
+        return successResponse(
+
+            res,
+
+            result.suppliers,
+
+            MESSAGES.SUPPLIER
+                .LIST_RETRIEVED,
+
+            200,
+
+            result.pagination
+
+        );
 
     });
 
-});
 
-const deleteSupplier = asyncHandler(async (req, res) => {
+const getSupplier =
+    asyncHandler(async (req, res) => {
 
-    await supplierService.deleteSupplier(req.params.id);
+        const supplier =
+            await supplierService
+                .getSupplier(
+                    req.params.id
+                );
 
-    res.status(200).json({
 
-        success: true,
+        return successResponse(
 
-        message: "Supplier deleted successfully.",
+            res,
+
+            supplier,
+
+            MESSAGES.SUPPLIER.RETRIEVED
+
+        );
 
     });
 
-});
+
+const updateSupplier =
+    asyncHandler(async (req, res) => {
+
+        const supplier =
+            await supplierService
+                .updateSupplier({
+
+                    supplierId:
+                        req.params.id,
+
+                    supplierData:
+                        req.body,
+
+                });
+
+
+        return successResponse(
+
+            res,
+
+            supplier,
+
+            MESSAGES.SUPPLIER.UPDATED
+
+        );
+
+    });
+
+
+const deleteSupplier =
+    asyncHandler(async (req, res) => {
+
+        await supplierService
+            .deleteSupplier(
+                req.params.id
+            );
+
+
+        return successResponse(
+
+            res,
+
+            null,
+
+            MESSAGES.SUPPLIER.DELETED
+
+        );
+
+    });
+
+
 module.exports = {
+
     createSupplier,
+
     listSuppliers,
+
     getSupplier,
+
     updateSupplier,
+
     deleteSupplier,
+
 };

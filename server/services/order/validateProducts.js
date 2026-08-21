@@ -1,13 +1,23 @@
-const productService = require("../product");
+const MESSAGES =
+    require("../../constants/messages");
 
-const validateProducts = async (items) => {
+const STOCK_STATUS =
+    require("../../constants/stockStatus");
 
-    const productIds = items.map(
-        item => item.product
-    );
+const productService =
+    require("../product");
+
+const validateProducts = async ({
+    items,
+}) => {
+
+    const productIds =
+        items.map(item => item.product);
 
     const products =
-        await productService.findProducts(productIds);
+        await productService.findProducts(
+            productIds
+        );
 
     const productMap = new Map(
         products.map(product => [
@@ -18,19 +28,37 @@ const validateProducts = async (items) => {
 
     for (const item of items) {
 
-        const productId = item.product.toString();
+        const product =
+            productMap.get(
+                item.product.toString()
+            );
 
-        const product = productMap.get(productId);
-
-        if (product.stockStatus !== "in-stock") {
+        if (!product) {
             throw new Error(
-                `${product.title} is out of stock.`
+                MESSAGES.PRODUCT.NOT_FOUND
             );
         }
 
-        if (item.quantity > product.stockQuantity) {
+        if (
+            product.stockStatus !==
+            STOCK_STATUS.IN_STOCK
+        ) {
             throw new Error(
-                `Only ${product.stockQuantity} units of ${product.title} are available.`
+                MESSAGES.PRODUCT.OUT_OF_STOCK(
+                    product.title
+                )
+            );
+        }
+
+        if (
+            item.quantity >
+            product.stockQuantity
+        ) {
+            throw new Error(
+                MESSAGES.PRODUCT.INSUFFICIENT_STOCK(
+                    product.title,
+                    product.stockQuantity
+                )
             );
         }
 

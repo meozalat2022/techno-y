@@ -1,13 +1,18 @@
-
-
-
 module.exports = {
 
-    generatePurchaseNumber: require("./generatePurchaseNumber"),
+    createPurchase:
+        require("./createPurchase"),
 
-    createPurchase: require("./createPurchase"),
+    getPurchases:
+        require("./getPurchases"),
 
-    submitPurchase: require("./submitPurchase"),
-    receivePurchase: require("./receivePurchase"),
+    getPurchaseByNumber:
+        require("./getPurchaseByNumber"),
+
+    submitPurchase:
+        require("./submitPurchase"),
+
+    receivePurchase:
+        require("./receivePurchase"),
 
 };

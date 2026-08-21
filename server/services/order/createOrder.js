@@ -22,27 +22,29 @@ const createOrder = async ({
 
         session.startTransaction();
 
-    
+
 
         // Validation
         validateRequest({
-    customer,
-    items,
-    shippingAddress,
-    payment,
-});
+            customer,
+            items,
+            shippingAddress,
+            payment,
+        });
 
         // Fetch & validate products
-        const products = await validateProducts(items);
+        const products = await validateProducts({ items });
 
         // Build order snapshot
         const orderItems = buildOrderItems(
-            products,
-            items
+            {
+                products,
+                items
+            }
         );
 
         // Calculate totals
-        const totals = calculateTotals(orderItems);
+        const totals = calculateTotals({orderItems});
 
         // Generate order number
         const orderNumber =
@@ -72,12 +74,13 @@ const createOrder = async ({
         // throw new Error("Transaction rollback test");
 
         // Reduce inventory
-      await updateInventory(
-    orderItems,
-    orderNumber,
-    user,
-    session
-);
+        await updateInventory({
+
+            orderItems,
+            orderNumber,
+            user,
+            session
+        });
 
         // Commit transaction
         await session.commitTransaction();

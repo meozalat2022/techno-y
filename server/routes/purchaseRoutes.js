@@ -1,6 +1,8 @@
-const express = require("express");
+const express =
+    require("express");
 
-const router = express.Router();
+const router =
+    express.Router();
 
 const {
     protect,
@@ -11,9 +13,29 @@ const admin =
 
 const {
     createPurchase,
+    getPurchases,
+    getPurchaseByNumber,
     submitPurchase,
     receivePurchase,
-} = require("../controllers/purchaseController");
+} =
+    require("../controllers/purchaseController");
+
+
+router.get(
+    "/",
+    protect,
+    admin,
+    getPurchases
+);
+
+
+router.get(
+    "/:purchaseNumber",
+    protect,
+    admin,
+    getPurchaseByNumber
+);
+
 
 router.post(
     "/",
@@ -22,17 +44,21 @@ router.post(
     createPurchase
 );
 
+
 router.post(
     "/:id/submit",
     protect,
     admin,
     submitPurchase
 );
+
+
 router.post(
     "/:id/receive",
     protect,
     admin,
     receivePurchase
 );
+
 
 module.exports = router;

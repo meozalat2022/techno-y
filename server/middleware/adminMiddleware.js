@@ -1,14 +1,40 @@
-const ROLES = require("../constants/roles");
-const MESSAGES = require("../constants/messages");
+const ROLES =
+    require("../constants/roles");
 
-const admin = (req, res, next) => {
-  if (req.user && req.user.role === ROLES.ADMIN) {
-    return next();
-  }
+const MESSAGES =
+    require("../constants/messages");
 
-  return res.status(403).json({
-    message: MESSAGES.AUTH.ADMIN_ACCESS_REQUIRED,
-  });
+
+const admin = (
+    req,
+    res,
+    next
+) => {
+
+    if (
+        req.user &&
+        req.user.role ===
+            ROLES.ADMIN
+    ) {
+
+        return next();
+
+    }
+
+
+    return res
+        .status(403)
+        .json({
+
+            success: false,
+
+            message:
+                MESSAGES.AUTH
+                    .ADMIN_ACCESS_REQUIRED,
+
+        });
+
 };
+
 
 module.exports = admin;

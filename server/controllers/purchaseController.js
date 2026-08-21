@@ -1,31 +1,93 @@
-const asyncHandler = require("../middleware/asyncHandler");
+const MESSAGES =
+    require("../constants/messages");
+
+const asyncHandler =
+    require("../middleware/asyncHandler");
 
 const purchaseService =
     require("../services/purchase");
+
+const {
+    successResponse,
+} = require("../utils/apiResponse");
+
 
 const createPurchase =
     asyncHandler(async (req, res) => {
 
         const purchase =
-            await purchaseService.createPurchase(
-                req.body,
-                req.user
-            );
+            await purchaseService.createPurchase({
 
-        res.status(201).json({
+                purchaseData:
+                    req.body,
 
-            success: true,
+                user:
+                    req.user,
 
-            message:
-                "Purchase created successfully.",
+            });
 
-            data: purchase,
+        return successResponse(
 
-        });
+            res,
+
+            purchase,
+
+            MESSAGES.PURCHASE.CREATED,
+
+            201
+
+        );
 
     });
 
-    const submitPurchase =
+
+const getPurchases =
+    asyncHandler(async (req, res) => {
+
+        const result =
+            await purchaseService.getPurchases(
+                req.query
+            );
+
+        return successResponse(
+
+            res,
+
+            result.purchases,
+
+            MESSAGES.PURCHASE.LIST_RETRIEVED,
+
+            200,
+
+            result.pagination
+
+        );
+
+    });
+
+
+const getPurchaseByNumber =
+    asyncHandler(async (req, res) => {
+
+        const purchase =
+            await purchaseService.getPurchaseByNumber(
+                req.params.purchaseNumber
+            );
+
+        return successResponse(
+
+            res,
+
+            purchase,
+
+            MESSAGES.PURCHASE.RETRIEVED
+
+        );
+
+    });
+
+
+const submitPurchase =
     asyncHandler(async (req, res) => {
 
         const purchase =
@@ -33,37 +95,59 @@ const createPurchase =
                 req.params.id
             );
 
-        res.json({
+        return successResponse(
 
-            success: true,
+            res,
 
-            message:
-                "Purchase submitted successfully.",
+            purchase,
 
-            data: purchase,
+            MESSAGES.PURCHASE.SUBMITTED
 
-        });
-
-    });
-    const receivePurchase = asyncHandler(async (req, res) => {
-
-    const purchase =
-        await purchaseService.receivePurchase(
-            req.params.id,
-            req.body.items,
-            req.user
         );
 
-    res.json({
-        success: true,
-        message: "Purchase received successfully.",
-        data: purchase,
     });
 
-});
+
+const receivePurchase =
+    asyncHandler(async (req, res) => {
+
+        const purchase =
+            await purchaseService.receivePurchase({
+
+                purchaseId:
+                    req.params.id,
+
+                receivedItems:
+                    req.body.items,
+
+                user:
+                    req.user,
+
+            });
+
+        return successResponse(
+
+            res,
+
+            purchase,
+
+            MESSAGES.PURCHASE.RECEIVED
+
+        );
+
+    });
+
 
 module.exports = {
+
     createPurchase,
+
+    getPurchases,
+
+    getPurchaseByNumber,
+
     submitPurchase,
-    receivePurchase
+
+    receivePurchase,
+
 };

@@ -1,29 +1,43 @@
-const mongoose = require("mongoose");
-const Purchase = require("../../models/Purchase");
-const inventoryService = require("../inventory");
-const findDocumentOrThrow = require("../../utils/findDocumentOrThrow");
+const mongoose =
+    require("mongoose");
+
+const Purchase =
+    require("../../models/Purchase");
+
+const inventoryService =
+    require("../inventory");
+
+const findDocumentOrThrow =
+    require("../../utils/findDocumentOrThrow");
+
 const INVENTORY_MOVEMENT_TYPES =
     require("../../constants/inventoryMovementTypes");
-    
 
 const REFERENCE_TYPES =
     require("../../constants/inventoryReferenceTypes");
-const validateReceive = require("./validateReceive");
+
+const STOCK_OPERATIONS =
+    require("../../constants/stockOperations");
+
+const validateReceive =
+    require("./validateReceive");
+
 const updatePurchaseStatus =
     require("./updatePurchaseStatus");
 
 
-const receivePurchase = async (
+const receivePurchase = async ({
     purchaseId,
     receivedItems,
-    user
-) => {
+    user,
+}) => {
 
-    const session = await mongoose.startSession();
-
-    session.startTransaction();
+    const session =
+        await mongoose.startSession();
 
     try {
+
+        await session.startTransaction();
 
         const purchase =
             await findDocumentOrThrow(
@@ -31,7 +45,8 @@ const receivePurchase = async (
                 {
                     _id: purchaseId,
                 },
-                "Purchase"
+                "Purchase",
+                session
             );
 
         validateReceive(
@@ -39,14 +54,18 @@ const receivePurchase = async (
             receivedItems
         );
 
-        const receivedItemMap = new Map(
-            receivedItems.map(item => [
-                item.product.toString(),
-                item,
-            ])
-        );
+        const receivedItemMap =
+            new Map(
+                receivedItems.map(item => [
+                    item.product.toString(),
+                    item,
+                ])
+            );
 
-        for (const purchaseItem of purchase.items) {
+        for (
+            const purchaseItem
+            of purchase.items
+        ) {
 
             const receivedItem =
                 receivedItemMap.get(
@@ -57,30 +76,20 @@ const receivePurchase = async (
                 continue;
             }
 
-            // purchaseItem.receivedQuantity +=
-            //     receivedItem.quantityReceived;
-            // await inventoryService.adjustStock({
-
-            //     productId: purchaseItem.product,
-
-            //     quantity: receivedItem.quantityReceived,
-
-            //     type: "increase",
-
-            //     session,
-
-            // });
             purchaseItem.receivedQuantity +=
                 receivedItem.quantityReceived;
 
             const stock =
                 await inventoryService.updateStock({
 
-                    productId: purchaseItem.product,
+                    productId:
+                        purchaseItem.product,
 
-                    quantity: receivedItem.quantityReceived,
+                    quantity:
+                        receivedItem.quantityReceived,
 
-                    operation: "increase",
+                    operation:
+                        STOCK_OPERATIONS.INCREASE,
 
                     session,
 
@@ -88,7 +97,8 @@ const receivePurchase = async (
 
             await inventoryService.createMovement({
 
-                product: purchaseItem.product,
+                product:
+                    purchaseItem.product,
 
                 type:
                     INVENTORY_MOVEMENT_TYPES.PURCHASE,
@@ -112,33 +122,7 @@ const receivePurchase = async (
                     "Purchase received",
 
                 performedBy:
-                    user._id,
-
-                session,
-
-            });
-            await inventoryService.createMovement({
-
-                product: purchaseItem.product,
-
-                type: "purchase",
-
-                quantity: receivedItem.quantityReceived,
-
-                previousStock:
-                    purchaseItem.receivedQuantity -
-                    receivedItem.quantityReceived,
-
-                newStock:
-                    purchaseItem.receivedQuantity,
-
-                reference: purchase.purchaseNumber,
-
-                referenceType: "purchase",
-
-                notes: "Purchase received",
-
-                performedBy: user._id,
+                    user?._id || null,
 
                 session,
 
@@ -147,8 +131,8 @@ const receivePurchase = async (
         }
 
         updatePurchaseStatus(
-    purchase
-);
+            purchase
+        );
 
         await purchase.save({
             session,
@@ -171,5 +155,6 @@ const receivePurchase = async (
     }
 
 };
+
 
 module.exports = receivePurchase;

@@ -1,16 +1,56 @@
+const MESSAGES =
+    require("../../constants/messages");
+
+
 const validateSupplier = ({
-    name,
-    phone,
+    supplierData,
+    partial = false,
 }) => {
 
-    if (!name?.trim()) {
-        throw new Error("Supplier name is required.");
+    const {
+        name,
+        phone,
+    } = supplierData;
+
+
+    if (
+        !partial ||
+        name !== undefined
+    ) {
+
+        if (
+            typeof name !== "string" ||
+            !name.trim()
+        ) {
+
+            throw new Error(
+                MESSAGES.SUPPLIER.NAME_REQUIRED
+            );
+
+        }
+
     }
 
-    if (!phone?.trim()) {
-        throw new Error("Supplier phone is required.");
+
+    if (
+        !partial ||
+        phone !== undefined
+    ) {
+
+        if (
+            typeof phone !== "string" ||
+            !phone.trim()
+        ) {
+
+            throw new Error(
+                MESSAGES.SUPPLIER.PHONE_REQUIRED
+            );
+
+        }
+
     }
 
 };
+
 
 module.exports = validateSupplier;

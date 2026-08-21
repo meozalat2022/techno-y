@@ -13,7 +13,7 @@ const saveOrder = async ({
 
 
  
-   const order = await Order.create(
+   const [order ]= await Order.create(
     [{
         orderNumber,
 
@@ -46,7 +46,7 @@ const saveOrder = async ({
     }
 );
 
-return order[0];
+return order;
 
 };
 

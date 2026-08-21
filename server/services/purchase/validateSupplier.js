@@ -1,9 +1,14 @@
-const Supplier = require("../../models/Supplier");
-const findDocumentOrThrow = require("../../utils/findDocumentOrThrow");
+const Supplier =
+    require("../../models/Supplier");
 
-const validateSupplier = async (supplierId) => {
+const findDocumentOrThrow =
+    require("../../utils/findDocumentOrThrow");
 
-    return await findDocumentOrThrow(
+const validateSupplier = async (
+    supplierId
+) => {
+
+    return findDocumentOrThrow(
         Supplier,
         {
             _id: supplierId,

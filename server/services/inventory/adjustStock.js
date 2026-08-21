@@ -28,8 +28,8 @@ const adjustStock = async ({
 
     try {
 
-        await session.startTransaction();
-        const stock = await updateStock({
+        session.startTransaction();
+        const stockUpdate = await updateStock({
             productId,
             quantity,
             operation,
@@ -38,6 +38,7 @@ const adjustStock = async ({
 
         const adjustmentNumber =
             await generateAdjustmentNumber(session);
+
         const movementType =
             operation === STOCK_OPERATIONS.INCREASE
                 ? INVENTORY_MOVEMENT_TYPES.ADJUSTMENT_IN
@@ -45,18 +46,17 @@ const adjustStock = async ({
 
         await createMovement({
 
-            product: stock.productId,
+            product: stockUpdate.productId,
 
-            type:
-                movementType,
+            type: movementType,
 
             quantity,
 
             previousStock:
-                stock.previousStock,
+                stockUpdate.previousStock,
 
             newStock:
-                stock.newStock,
+                stockUpdate.newStock,
 
             referenceType:
                 REFERENCE_TYPES.ADJUSTMENT,
@@ -74,7 +74,7 @@ const adjustStock = async ({
 
         await session.commitTransaction();
 
-        return stock;
+        return stockUpdate;
 
     } catch (error) {
 

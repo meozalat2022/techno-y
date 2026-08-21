@@ -44,6 +44,11 @@ const purchaseSchema = new mongoose.Schema(
                     default: 0,
                     min: 0,
                 },
+                returnedQuantity: {
+                    type: Number,
+                    default: 0,
+                    min: 0,
+                },
 
                 pricing: {
                     unitCost: {

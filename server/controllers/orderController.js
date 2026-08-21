@@ -1,140 +1,211 @@
-const MESSAGES = require("../constants/messages");
-const asyncHandler = require("../middleware/asyncHandler");
-const orderService = require("../services/order");
-const { successResponse } = require("../utils/apiResponse");
+const MESSAGES =
+    require("../constants/messages");
 
-const createOrder = asyncHandler(async (req, res) => {
+const asyncHandler =
+    require("../middleware/asyncHandler");
 
-    console.log("Passing user to saveOrder:", req.user);
+const orderService =
+    require("../services/order");
 
-    const result = await orderService.createOrder({
+const {
+    successResponse,
+} =
+    require("../utils/apiResponse");
 
-        ...req.body,
 
-        user: req.user,
+const createOrder =
+    asyncHandler(async (req, res) => {
+
+        const result =
+            await orderService.createOrder({
+
+                ...req.body,
+
+                user:
+                    req.user,
+
+            });
+
+
+        return successResponse(
+            res,
+            result,
+            MESSAGES.ORDER.CREATED,
+            201
+        );
 
     });
 
-    return successResponse(
-        res,
-        result,
-        MESSAGES.ORDER.CREATED,
-        201
-    );
 
-});
+const getOrderByNumber =
+    asyncHandler(async (req, res) => {
 
-const getOrderByNumber = asyncHandler(async (req, res) => {
+        const order =
+            await orderService
+                .getOrderByNumber(
+                    req.params.orderNumber
+                );
 
-    const order =
-        await orderService.getOrderByNumber(
-            req.params.orderNumber
+
+        return successResponse(
+            res,
+            order,
+            MESSAGES.ORDER.RETRIEVED
         );
 
-    return successResponse(
-        res,
-        order,
-        MESSAGES.ORDER.RETRIEVED
-    );
+    });
 
-});
 
-const getOrders = asyncHandler(async (req, res) => {
+const getOrders =
+    asyncHandler(async (req, res) => {
 
-    const result =
-        await orderService.getOrders(req.query);
+        const result =
+            await orderService
+                .getOrders(
+                    req.query
+                );
 
-    return successResponse(
 
-        res,
+        return successResponse(
 
-        result.orders,
+            res,
 
-        MESSAGES.ORDER.LIST_RETRIEVED,
+            result.orders,
 
-        200,
+            MESSAGES.ORDER
+                .LIST_RETRIEVED,
 
-        result.pagination
+            200,
 
-    );
+            result.pagination
 
-});
-const updateOrderStatus = asyncHandler(async (req, res) => {
-
-    const order =
-        await orderService.updateOrderStatus(
-            req.params.orderNumber,
-            req.body.status
         );
 
-    return successResponse(
-        res,
-        order,
-        MESSAGES.ORDER.STATUS_UPDATED
-    );
+    });
 
-});
 
-const getDashboardStats = asyncHandler(async (req, res) => {
+const updateOrderStatus =
+    asyncHandler(async (req, res) => {
 
-    const stats =
-        await orderService.getDashboardStats();
+        const order =
+            await orderService
+                .updateOrderStatus({
 
-    return successResponse(
-        res,
-        stats,
-        MESSAGES.ORDER.DASHBOARD_RETRIEVED
-    );
+                    orderNumber:
+                        req.params
+                            .orderNumber,
 
-});
+                    status:
+                        req.body.status,
+
+                    user:
+                        req.user,
+
+                });
+
+
+        return successResponse(
+
+            res,
+
+            order,
+
+            MESSAGES.ORDER
+                .STATUS_UPDATED
+
+        );
+
+    });
+
+
+const getDashboardStats =
+    asyncHandler(async (req, res) => {
+
+        const stats =
+            await orderService
+                .getDashboardStats();
+
+
+        return successResponse(
+
+            res,
+
+            stats,
+
+            MESSAGES.ORDER
+                .DASHBOARD_RETRIEVED
+
+        );
+
+    });
+
 
 const getMyOrders =
-asyncHandler(async (req, res) => {
+    asyncHandler(async (req, res) => {
 
-    const result =
-        await orderService.getMyOrders(
-            req.user._id,
-            req.query
+        const result =
+            await orderService
+                .getMyOrders(
+                    req.user._id,
+                    req.query
+                );
+
+
+        return successResponse(
+
+            res,
+
+            result,
+
+            MESSAGES.ORDER.RETRIEVED
+
         );
 
-    return successResponse(
-
-        res,
-
-        result,
-
-        MESSAGES.ORDER.RETRIEVED
-
-    );
-
-});
-
-const getMyOrderByNumber =
-asyncHandler(async (req, res) => {
-
-    const order =
-    await orderService.createOrder({
-        ...req.body,
-        user: req.user,
     });
 
-    return successResponse(
 
-        res,
+const getMyOrderByNumber =
+    asyncHandler(async (req, res) => {
 
-        order,
+        const order =
+            await orderService
+                .getMyOrderByNumber(
 
-        MESSAGES.ORDER.RETRIEVED
+                    req.user,
 
-    );
+                    req.params
+                        .orderNumber
 
-});
+                );
+
+
+        return successResponse(
+
+            res,
+
+            order,
+
+            MESSAGES.ORDER.RETRIEVED
+
+        );
+
+    });
+
+
 module.exports = {
+
     createOrder,
+
     getOrderByNumber,
+
     getOrders,
+
     updateOrderStatus,
+
     getDashboardStats,
+
     getMyOrders,
+
     getMyOrderByNumber,
+
 };

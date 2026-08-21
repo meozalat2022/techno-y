@@ -1,10 +1,25 @@
-const buildOrderItems = (products, items) => {
+const MESSAGES =
+    require("../../constants/messages");
+const buildOrderItems = ({products, items}) => {
+
+    const productMap = new Map(
+        products.map(product => [
+            product._id.toString(),
+            product,
+        ])
+    );
 
     return items.map(item => {
 
-        const product = products.find(
-            p => p._id.toString() === item.product.toString()
+        const product = productMap.get(
+            item.product.toString()
         );
+
+if (!product) {
+    throw new Error(
+        MESSAGES.PRODUCT.NOT_FOUND
+    );
+}
 
         const finalPrice =
             product.salePrice > 0
@@ -64,3 +79,4 @@ const buildOrderItems = (products, items) => {
 };
 
 module.exports = buildOrderItems;
+

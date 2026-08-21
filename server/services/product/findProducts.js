@@ -1,24 +1,59 @@
-const Product = require("../../models/Product");
+const Product =
+    require("../../models/Product");
+
+const MESSAGES =
+    require("../../constants/messages");
+
 
 const findProducts = async (productIds) => {
 
-    const products = await Product.find({
-        _id: {
-            $in: productIds,
-        },
-        isActive: true,
-    })
-        .populate("brand", "name")
-        .populate("category", "name");
+    const uniqueProductIds =
+        [
+            ...new Set(
+                productIds.map(
+                    productId =>
+                        productId.toString()
+                )
+            ),
+        ];
 
-    if (products.length !== productIds.length) {
+
+    const products =
+        await Product.find({
+
+            _id: {
+                $in: uniqueProductIds,
+            },
+
+            isActive: true,
+
+        })
+            .populate(
+                "brand",
+                "name"
+            )
+            .populate(
+                "category",
+                "name"
+            );
+
+
+    if (
+        products.length !==
+        uniqueProductIds.length
+    ) {
+
         throw new Error(
-            "One or more products were not found."
+            MESSAGES.PRODUCT
+                .ONE_OR_MORE_NOT_FOUND
         );
+
     }
+
 
     return products;
 
 };
+
 
 module.exports = findProducts;

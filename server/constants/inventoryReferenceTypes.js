@@ -1,12 +1,18 @@
 module.exports = {
-       ORDER: "order",
 
-    PURCHASE: "purchase",
+    ORDER:
+        "order",
 
-    ADJUSTMENT: "adjustment",
+    PURCHASE:
+        "purchase",
 
-    CUSTOMER_RETURN: "customer_return",
+    ADJUSTMENT:
+        "adjustment",
 
-    SUPPLIER_RETURN: "supplier_return",
-    PURCHASE: "purchase",
+    CUSTOMER_RETURN:
+        "customer_return",
+
+    SUPPLIER_RETURN:
+        "supplier_return",
+
 };

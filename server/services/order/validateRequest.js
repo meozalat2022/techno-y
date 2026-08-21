@@ -32,10 +32,10 @@ const validateRequest = (body) => {
 
     for (const item of items) {
 
-        if (!item.product)
+        if (item.product==null)
             throw new Error("Product ID is required.");
 
-        if (!item.quantity)
+        if (item.quantity == null)
             throw new Error("Quantity is required.");
 
         if (item.quantity <= 0)

@@ -1,12 +1,16 @@
-const productService = require("../product");
+const productService =
+    require("../product");
 
-const validateProducts = async (items) => {
+const validateProducts = async (
+    items
+) => {
 
-    const productIds = items.map(
-        item => item.product
-    );
+    const productIds =
+        items.map(
+            item => item.product
+        );
 
-    return await productService.findProducts(
+    return productService.findProducts(
         productIds
     );
 

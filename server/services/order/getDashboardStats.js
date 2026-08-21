@@ -1,115 +1,200 @@
-const Order = require("../../models/Order");
+const Order =
+    require("../../models/Order");
 
-const getDashboardStats = async () => {
+const ORDER_STATUS =
+    require(
+        "../../constants/orderStatus"
+    );
 
-    const startOfToday = new Date();
 
-    startOfToday.setHours(0, 0, 0, 0);
+const getDashboardStats =
+    async () => {
 
-    const [
+        const startOfToday =
+            new Date();
 
-        totalOrders,
-        pending,
-        confirmed,
-        packed,
-        shipped,
-        delivered,
-        cancelled,
 
-        todayOrders,
+        startOfToday.setHours(
+            0,
+            0,
+            0,
+            0
+        );
 
-        totalRevenue,
 
-        todayRevenue,
+        const [
 
-    ] = await Promise.all([
+            totalOrders,
 
-        Order.countDocuments(),
+            pending,
 
-        Order.countDocuments({ status: "pending" }),
+            confirmed,
 
-        Order.countDocuments({ status: "confirmed" }),
+            processing,
 
-        Order.countDocuments({ status: "packed" }),
+            packed,
 
-        Order.countDocuments({ status: "shipped" }),
+            shipped,
 
-        Order.countDocuments({ status: "delivered" }),
+            delivered,
 
-        Order.countDocuments({ status: "cancelled" }),
+            cancelled,
 
-        Order.countDocuments({
-            createdAt: {
-                $gte: startOfToday,
-            },
-        }),
+            todayOrders,
 
-        Order.aggregate([
-            {
-                $match: {
-                    status: {
-                        $ne: "cancelled",
-                    },
-                },
-            },
-            {
-                $group: {
-                    _id: null,
-                    total: {
-                        $sum: "$totals.total",
-                    },
-                },
-            },
-        ]),
+            totalRevenue,
 
-        Order.aggregate([
-            {
-                $match: {
+            todayRevenue,
+
+        ] =
+            await Promise.all([
+
+                Order.countDocuments(),
+
+                Order.countDocuments({
+                    status:
+                        ORDER_STATUS.PENDING,
+                }),
+
+                Order.countDocuments({
+                    status:
+                        ORDER_STATUS.CONFIRMED,
+                }),
+
+                Order.countDocuments({
+                    status:
+                        ORDER_STATUS.PROCESSING,
+                }),
+
+                Order.countDocuments({
+                    status:
+                        ORDER_STATUS.PACKED,
+                }),
+
+                Order.countDocuments({
+                    status:
+                        ORDER_STATUS.SHIPPED,
+                }),
+
+                Order.countDocuments({
+                    status:
+                        ORDER_STATUS.DELIVERED,
+                }),
+
+                Order.countDocuments({
+                    status:
+                        ORDER_STATUS.CANCELLED,
+                }),
+
+                Order.countDocuments({
+
                     createdAt: {
-                        $gte: startOfToday,
+                        $gte:
+                            startOfToday,
                     },
-                    status: {
-                        $ne: "cancelled",
+
+                }),
+
+                Order.aggregate([
+
+                    {
+                        $match: {
+
+                            status: {
+                                $ne:
+                                    ORDER_STATUS
+                                        .CANCELLED,
+                            },
+
+                        },
                     },
-                },
-            },
-            {
-                $group: {
-                    _id: null,
-                    total: {
-                        $sum: "$totals.total",
+
+                    {
+                        $group: {
+
+                            _id:
+                                null,
+
+                            total: {
+                                $sum:
+                                    "$totals.total",
+                            },
+
+                        },
                     },
-                },
-            },
-        ]),
 
-    ]);
-    return {
+                ]),
 
-        totalOrders,
+                Order.aggregate([
 
-        pending,
+                    {
+                        $match: {
 
-        confirmed,
+                            createdAt: {
+                                $gte:
+                                    startOfToday,
+                            },
 
-        packed,
+                            status: {
+                                $ne:
+                                    ORDER_STATUS
+                                        .CANCELLED,
+                            },
 
-        shipped,
+                        },
+                    },
 
-        delivered,
+                    {
+                        $group: {
 
-        cancelled,
+                            _id:
+                                null,
 
-        todayOrders,
+                            total: {
+                                $sum:
+                                    "$totals.total",
+                            },
 
-        totalRevenue:
-            totalRevenue[0]?.total || 0,
+                        },
+                    },
 
-        todayRevenue:
-            todayRevenue[0]?.total || 0,
+                ]),
+
+            ]);
+
+
+        return {
+
+            totalOrders,
+
+            pending,
+
+            confirmed,
+
+            processing,
+
+            packed,
+
+            shipped,
+
+            delivered,
+
+            cancelled,
+
+            todayOrders,
+
+            totalRevenue:
+                totalRevenue[0]
+                    ?.total || 0,
+
+            todayRevenue:
+                todayRevenue[0]
+                    ?.total || 0,
+
+        };
 
     };
 
-};
 
-module.exports = getDashboardStats;
+module.exports =
+    getDashboardStats;

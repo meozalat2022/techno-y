@@ -1,41 +1,36 @@
-const Purchase = require("../../models/Purchase");
+const Purchase =
+    require("../../models/Purchase");
 
-const savePurchase = async (
-
+const savePurchase = async ({
     purchaseNumber,
-
     supplier,
-
     items,
-
     totals,
-
     createdBy,
+    session,
+}) => {
 
-    session
+    const purchase =
+        await Purchase.create(
+            [
+                {
 
-) => {
+                    purchaseNumber,
 
-    const purchase = await Purchase.create(
-        [
+                    supplier,
+
+                    items,
+
+                    totals,
+
+                    createdBy,
+
+                },
+            ],
             {
-
-                purchaseNumber,
-
-                supplier,
-
-                items,
-
-                totals,
-
-                createdBy,
-
-            },
-        ],
-        {
-            session,
-        }
-    );
+                session,
+            }
+        );
 
     return purchase[0];
 

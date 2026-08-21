@@ -1,18 +1,24 @@
-const findDocumentOrThrow = require("../../utils/findDocumentOrThrow");
-const Supplier = require("../../models/Supplier");
+const Supplier =
+    require("../../models/Supplier");
 
-const getSupplier = async (id) => {
+const findDocumentOrThrow =
+    require("../../utils/findDocumentOrThrow");
 
-    const supplier = await findDocumentOrThrow(
+
+const getSupplier = async (
+    supplierId
+) => {
+
+    return findDocumentOrThrow(
         Supplier,
         {
-            _id: id,
+            _id: supplierId,
             isActive: true,
         },
         "Supplier"
     );
 
-    return supplier;
 };
+
 
 module.exports = getSupplier;

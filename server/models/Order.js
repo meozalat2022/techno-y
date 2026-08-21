@@ -84,6 +84,11 @@ const orderItemSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
+    returnedQuantity: {
+    type: Number,
+    default: 0,
+    min: 0,
+},
     inventory: {
 
       stockBefore: {

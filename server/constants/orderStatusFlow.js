@@ -1,28 +1,61 @@
+const ORDER_STATUS =
+    require("./orderStatus");
+
+
 const ORDER_STATUS_FLOW = {
 
-    pending: [
-        "confirmed",
-        "cancelled",
+    [ORDER_STATUS.PENDING]: [
+
+        ORDER_STATUS.CONFIRMED,
+
+        ORDER_STATUS.CANCELLED,
+
     ],
 
-    confirmed: [
-        "packed",
-        "cancelled",
+
+    [ORDER_STATUS.CONFIRMED]: [
+
+        ORDER_STATUS.PACKED,
+
+        ORDER_STATUS.CANCELLED,
+
     ],
 
-    packed: [
-        "shipped",
-        "cancelled",
+
+    [ORDER_STATUS.PROCESSING]: [
+
+        ORDER_STATUS.PACKED,
+
+        ORDER_STATUS.CANCELLED,
+
     ],
 
-    shipped: [
-        "delivered",
+
+    [ORDER_STATUS.PACKED]: [
+
+        ORDER_STATUS.SHIPPED,
+
+        ORDER_STATUS.CANCELLED,
+
     ],
 
-    delivered: [],
 
-    cancelled: [],
+    [ORDER_STATUS.SHIPPED]: [
+
+        ORDER_STATUS.DELIVERED,
+
+    ],
+
+
+    [ORDER_STATUS.DELIVERED]:
+        [],
+
+
+    [ORDER_STATUS.CANCELLED]:
+        [],
 
 };
 
-module.exports = ORDER_STATUS_FLOW;
+
+module.exports =
+    ORDER_STATUS_FLOW;
