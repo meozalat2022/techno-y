@@ -20,11 +20,16 @@ if (!product) {
         MESSAGES.PRODUCT.NOT_FOUND
     );
 }
+const hasValidSalePrice =
+    product.salePrice > 0 &&
+    product.salePrice <
+        product.regularPrice;
 
-        const finalPrice =
-            product.salePrice > 0
-                ? product.salePrice
-                : product.regularPrice;
+
+const finalPrice =
+    hasValidSalePrice
+        ? product.salePrice
+        : product.regularPrice;
 
         return {
 

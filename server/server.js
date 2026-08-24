@@ -40,6 +40,11 @@ const uploadRoutes =
         "./routes/supplierReturnRoutes"
     );
 
+    const contactRoutes =
+    require(
+        "./routes/contactRoutes"
+    );
+
 app.use(cors({
   origin: process.env.CLIENT_URL,
   credentials: true,
@@ -84,6 +89,11 @@ app.use(
 app.use(
     "/api/supplier-returns",
     supplierReturnRoutes
+);
+
+app.use(
+    "/api/contact",
+    contactRoutes
 );
 const PORT = process.env.PORT || 5000;
 
