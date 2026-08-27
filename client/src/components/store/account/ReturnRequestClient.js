@@ -24,6 +24,9 @@ import {
     RotateCcw,
 } from "lucide-react";
 
+import SafeImage from
+    "@/components/store/SafeImage";
+
 import {
     useAuth,
 } from "@/context/AuthContext";
@@ -31,22 +34,15 @@ import {
 import orderService from
     "@/services/orderService";
 
+import getApiErrorMessage from
+    "@/utils/getApiErrorMessage";
+
 import customerReturnService from
     "@/services/customerReturnService";
 
 
-const formatCurrency =
-    value =>
-        new Intl.NumberFormat(
-            "ar-EG",
-            {
-                style: "currency",
-                currency: "EGP",
-                maximumFractionDigits: 2,
-            }
-        ).format(
-            Number(value) || 0
-        );
+import formatCurrency from
+    "@/utils/formatCurrency";
 
 
 export default function ReturnRequestClient({
@@ -504,12 +500,10 @@ export default function ReturnRequestClient({
             } catch (error) {
 
                 setError(
-
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "تعذر إرسال طلب الإرجاع."
-
+                    getApiErrorMessage(
+                        error,
+                        "تعذر إرسال طلب الإرجاع."
+                    )
                 );
 
             } finally {
@@ -1008,7 +1002,7 @@ function ReturnItem({
                         item.image?.url
                             ? (
 
-                                <img
+                                <SafeImage
                                     src={
                                         item.image.url
                                     }

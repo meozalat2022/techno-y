@@ -6,114 +6,106 @@ import {
 const SITE_URL =
     "https://techno-y.com";
 
-
-export default async function sitemap() {
-
-    const staticPages = [
-
-        {
-            url:
-                SITE_URL,
-
-            lastModified:
-                new Date(),
-
-            changeFrequency:
-                "daily",
-
-            priority:
-                1,
-        },
-
-        {
-            url:
-                `${SITE_URL}/products`,
-
-            lastModified:
-                new Date(),
-
-            changeFrequency:
-                "daily",
-
-            priority:
-                0.9,
-        },
-
-        {
-            url:
-                `${SITE_URL}/contact`,
-
-            lastModified:
-                new Date(),
-
-            changeFrequency:
-                "monthly",
-
-            priority:
-                0.6,
-        },
-
-    ];
+const PAGE_SIZE = 100;
 
 
-    let products = [];
+async function getAllProducts() {
+    const products = [];
+    let page = 1;
+    let totalPages = 1;
 
-
-    try {
-
+    do {
         const response =
             await serverFetch(
-                "/products?page=1&limit=100&sort=newest",
+                `/products?page=${page}&limit=${PAGE_SIZE}&sort=newest`,
                 {
                     next: {
-                        revalidate:
-                            3600,
+                        revalidate: 3600,
                     },
                 }
             );
 
-
-        products =
-            response.data ||
-            [];
-
-    } catch {
-
-        products = [];
-
-    }
-
-
-    const productPages =
-        products.map(
-            product => ({
-
-                url:
-                    `${SITE_URL}/products/${product.slug}`,
-
-                lastModified:
-                    product.updatedAt
-                        ? new Date(
-                            product.updatedAt
-                        )
-                        : new Date(),
-
-                changeFrequency:
-                    "weekly",
-
-                priority:
-                    0.8,
-
-            })
+        products.push(
+            ...(response.data || [])
         );
 
+        totalPages =
+            Math.max(
+                1,
+                Number(
+                    response.pagination
+                        ?.pages
+                ) || 1
+            );
 
-    return [
+        page += 1;
+    } while (
+        page <= totalPages
+    );
 
-        ...staticPages,
+    return products;
+}
 
-        ...productPages,
 
+export default async function sitemap() {
+    const now = new Date();
+
+    const staticPages = [
+        {
+            url: SITE_URL,
+            lastModified: now,
+            changeFrequency: "daily",
+            priority: 1,
+        },
+        {
+            url:
+                `${SITE_URL}/products`,
+            lastModified: now,
+            changeFrequency: "daily",
+            priority: 0.9,
+        },
+        {
+            url:
+                `${SITE_URL}/contact`,
+            lastModified: now,
+            changeFrequency: "monthly",
+            priority: 0.6,
+        },
     ];
 
+    let products = [];
+
+    try {
+        products =
+            await getAllProducts();
+    } catch {
+        products = [];
+    }
+
+    const productPages =
+        products
+            .filter(
+                product =>
+                    product?.slug
+            )
+            .map(
+                product => ({
+                    url:
+                        `${SITE_URL}/products/${product.slug}`,
+                    lastModified:
+                        product.updatedAt
+                            ? new Date(
+                                product.updatedAt
+                            )
+                            : now,
+                    changeFrequency:
+                        "weekly",
+                    priority: 0.8,
+                })
+            );
+
+    return [
+        ...staticPages,
+        ...productPages,
+    ];
 }

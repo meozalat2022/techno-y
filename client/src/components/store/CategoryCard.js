@@ -5,6 +5,9 @@ import {
     Boxes,
 } from "lucide-react";
 
+import SafeImage from
+    "@/components/store/SafeImage";
+
 
 export default function CategoryCard({
     category,
@@ -42,13 +45,9 @@ export default function CategoryCard({
                     category.image
                         ? (
 
-                            <img
-                                src={
-                                    category.image
-                                }
-                                alt={
-                                    category.name
-                                }
+                            <SafeImage
+                                src={category.image}
+                                alt={category.name}
                                 className="
                                     h-full
                                     w-full
@@ -57,6 +56,7 @@ export default function CategoryCard({
                                     duration-300
                                     group-hover:scale-105
                                 "
+                                iconSize={44}
                             />
 
                         )

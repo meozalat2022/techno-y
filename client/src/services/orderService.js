@@ -125,6 +125,51 @@ const updateOrderStatus = async (
 };
 
 
+const createOpayPayment = async (
+    orderNumber
+) => {
+
+    const response =
+        await api.post(
+            `/payments/opay/${orderNumber}/create`
+        );
+
+
+    return response.data;
+
+};
+
+
+const getOpayPaymentStatus = async (
+    orderNumber
+) => {
+
+    const response =
+        await api.get(
+            `/payments/opay/${orderNumber}/status`
+        );
+
+
+    return response.data;
+
+};
+
+
+const closeOpayPayment = async (
+    orderNumber
+) => {
+
+    const response =
+        await api.post(
+            `/payments/opay/${orderNumber}/close`
+        );
+
+
+    return response.data;
+
+};
+
+
 const orderService = {
 
     createOrder,
@@ -138,6 +183,12 @@ const orderService = {
     getMyOrderByNumber,
 
     updateOrderStatus,
+
+    createOpayPayment,
+
+    getOpayPaymentStatus,
+
+    closeOpayPayment,
 
 };
 

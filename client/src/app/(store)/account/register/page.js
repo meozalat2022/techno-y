@@ -22,6 +22,9 @@ import {
     useAuth,
 } from "@/context/AuthContext";
 
+import getApiErrorMessage from
+    "@/utils/getApiErrorMessage";
+
 
 export default function RegisterPage() {
 
@@ -110,11 +113,11 @@ export default function RegisterPage() {
 
             if (
                 form.password.length <
-                6
+                8
             ) {
 
                 setError(
-                    "كلمة المرور يجب ألا تقل عن 6 أحرف."
+                    "كلمة المرور يجب ألا تقل عن 8 أحرف."
                 );
 
                 return;
@@ -159,12 +162,10 @@ export default function RegisterPage() {
             } catch (error) {
 
                 setError(
-
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "تعذر إنشاء الحساب."
-
+                    getApiErrorMessage(
+                        error,
+                        "تعذر إنشاء الحساب."
+                    )
                 );
 
             } finally {
@@ -353,7 +354,10 @@ export default function RegisterPage() {
                             <input
                                 required
                                 type="tel"
+                                inputMode="tel"
                                 autoComplete="tel"
+                                pattern="(?:\+20|0)1[0125][0-9]{8}"
+                                title="أدخل رقم موبايل مصري صحيح مثل 01012345678"
                                 value={
                                     form.phone
                                 }
@@ -369,6 +373,10 @@ export default function RegisterPage() {
                                     inputClass
                                 }
                             />
+
+                            <span className="mt-1 block text-xs text-[#918C84]">
+                                مثال: 01012345678
+                            </span>
                         </Field>
 
 
@@ -378,6 +386,8 @@ export default function RegisterPage() {
                         >
                             <input
                                 required
+                                minLength={8}
+                                maxLength={128}
                                 type="password"
                                 autoComplete="new-password"
                                 value={
@@ -404,6 +414,8 @@ export default function RegisterPage() {
                         >
                             <input
                                 required
+                                minLength={8}
+                                maxLength={128}
                                 type="password"
                                 autoComplete="new-password"
                                 value={

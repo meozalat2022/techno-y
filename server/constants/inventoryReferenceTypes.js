@@ -3,6 +3,9 @@ module.exports = {
     ORDER:
         "order",
 
+    STORE_SALE:
+        "store_sale",
+
     PURCHASE:
         "purchase",
 

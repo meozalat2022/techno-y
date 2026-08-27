@@ -10,18 +10,31 @@ const errorHandler = (
 ) => {
 
     let statusCode =
-        res.statusCode === 200
-            ? 500
-            : res.statusCode;
+        Number(
+            err.statusCode
+        ) ||
+        (
+            res.statusCode ===
+                200
+                ? 500
+                : res.statusCode
+        );
+
 
     let message =
-        err.message;
+        err.message ||
+        MESSAGES.COMMON
+            .INTERNAL_SERVER_ERROR;
 
 
     // Invalid MongoDB ObjectId
-    if (err.name === "CastError") {
+    if (
+        err.name ===
+        "CastError"
+    ) {
 
-        statusCode = 404;
+        statusCode =
+            404;
 
         message =
             MESSAGES.COMMON
@@ -36,7 +49,8 @@ const errorHandler = (
         "ValidationError"
     ) {
 
-        statusCode = 400;
+        statusCode =
+            400;
 
         message =
             Object.values(
@@ -53,14 +67,17 @@ const errorHandler = (
 
     // MongoDB duplicate key
     else if (
-        err.code === 11000
+        err.code ===
+        11000
     ) {
 
-        statusCode = 409;
+        statusCode =
+            409;
 
         const field =
             Object.keys(
-                err.keyValue || {}
+                err.keyValue ||
+                {}
             )[0];
 
 
@@ -78,7 +95,8 @@ const errorHandler = (
         "JsonWebTokenError"
     ) {
 
-        statusCode = 401;
+        statusCode =
+            401;
 
         message =
             MESSAGES.COMMON
@@ -92,7 +110,8 @@ const errorHandler = (
         "TokenExpiredError"
     ) {
 
-        statusCode = 401;
+        statusCode =
+            401;
 
         message =
             MESSAGES.COMMON
@@ -103,31 +122,40 @@ const errorHandler = (
 
     /*
      * Plain Error objects thrown intentionally
-     * by our business/service layer.
+     * by business/service code without an
+     * explicit statusCode.
      */
     else if (
-        statusCode === 500 &&
-        err.name === "Error"
+        statusCode ===
+            500 &&
+        err.name ===
+            "Error"
     ) {
 
         if (
-            /not found/i.test(
-                message
-            )
+            /not found/i
+                .test(
+                    message
+                )
         ) {
 
-            statusCode = 404;
+            statusCode =
+                404;
 
         } else if (
             /not authorized|not authorised|administrator access|required admin/i
-                .test(message)
+                .test(
+                    message
+                )
         ) {
 
-            statusCode = 403;
+            statusCode =
+                403;
 
         } else {
 
-            statusCode = 400;
+            statusCode =
+                400;
 
         }
 
@@ -135,7 +163,9 @@ const errorHandler = (
 
 
     return res
-        .status(statusCode)
+        .status(
+            statusCode
+        )
         .json({
 
             success: false,
@@ -143,8 +173,9 @@ const errorHandler = (
             message,
 
             stack:
-                process.env.NODE_ENV ===
-                "production"
+                process.env
+                    .NODE_ENV ===
+                    "production"
                     ? undefined
                     : err.stack,
 

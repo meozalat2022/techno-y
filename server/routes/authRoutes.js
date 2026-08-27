@@ -1,25 +1,77 @@
 const express = require("express");
-
 const router = express.Router();
 
 const {
-  registerUser,
-  loginUser,
-  logoutUser,
-  getCurrentUser,
+    registerUser,
+    loginUser,
+    logoutUser,
+    getCurrentUser,
+    forgotPassword,
+    resetPassword,
 } = require("../controllers/authController");
 
 const {
-  protect,
+    protect,
 } = require("../middleware/authMiddleware");
 
+const validate =
+    require("../middleware/validateMiddleware");
 
-router.post("/register", registerUser);
+const {
+    registerValidation,
+    loginValidation,
+    forgotPasswordValidation,
+    resetPasswordValidation,
+} = require("../validations/authValidation");
 
-router.post("/login", loginUser);
+const {
+    loginLimiter,
+    registerLimiter,
+    forgotPasswordLimiter,
+    resetPasswordLimiter,
+} = require("../middleware/rateLimiters");
 
-router.post("/logout", logoutUser);
+router.post(
+    "/register",
+    registerLimiter,
+    registerValidation,
+    validate,
+    registerUser
+);
 
-router.get("/me", protect, getCurrentUser);
+router.post(
+    "/login",
+    loginLimiter,
+    loginValidation,
+    validate,
+    loginUser
+);
+
+router.post(
+    "/forgot-password",
+    forgotPasswordLimiter,
+    forgotPasswordValidation,
+    validate,
+    forgotPassword
+);
+
+router.post(
+    "/reset-password",
+    resetPasswordLimiter,
+    resetPasswordValidation,
+    validate,
+    resetPassword
+);
+
+router.post(
+    "/logout",
+    logoutUser
+);
+
+router.get(
+    "/me",
+    protect,
+    getCurrentUser
+);
 
 module.exports = router;

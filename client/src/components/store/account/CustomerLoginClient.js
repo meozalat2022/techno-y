@@ -21,6 +21,9 @@ import {
     useAuth,
 } from "@/context/AuthContext";
 
+import getApiErrorMessage from
+    "@/utils/getApiErrorMessage";
+
 
 export default function CustomerLoginClient() {
 
@@ -121,12 +124,10 @@ export default function CustomerLoginClient() {
             } catch (error) {
 
                 setError(
-
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "تعذر تسجيل الدخول."
-
+                    getApiErrorMessage(
+                        error,
+                        "تعذر تسجيل الدخول."
+                    )
                 );
 
             } finally {
@@ -269,6 +270,16 @@ export default function CustomerLoginClient() {
                         />
 
                     </Field>
+
+
+                    <div className="text-left">
+                        <Link
+                            href="/account/forgot-password"
+                            className="text-sm font-semibold text-[#1F4E5F] hover:underline"
+                        >
+                            نسيت كلمة المرور؟
+                        </Link>
+                    </div>
 
 
                     <button

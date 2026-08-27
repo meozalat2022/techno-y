@@ -141,6 +141,20 @@ const productSchema = new mongoose.Schema(
       min: 0,
     },
 
+    /*
+     * Physical stock remains in stockQuantity.
+     * This buffer is reserved from online sales only.
+     * Example:
+     * stockQuantity = 5
+     * onlineSafetyStock = 1
+     * onlineAvailableQuantity = 4
+     */
+    onlineSafetyStock: {
+      type: Number,
+      default: 0,
+      min: 0,
+    },
+
     trackInventory: {
       type: Boolean,
       default: true,
@@ -149,7 +163,38 @@ const productSchema = new mongoose.Schema(
 
   {
     timestamps: true,
+    toJSON: {
+      virtuals: true,
+    },
+    toObject: {
+      virtuals: true,
+    },
   }
 );
+
+
+/*
+ * Do not mutate stockQuantity to implement the online buffer.
+ * This virtual is the quantity the storefront is allowed to sell.
+ */
+productSchema.virtual(
+  "onlineAvailableQuantity"
+).get(function () {
+
+  if (
+    this.trackInventory ===
+    false
+  ) {
+    return null;
+  }
+
+  return Math.max(
+    Number(this.stockQuantity) -
+      Number(this.onlineSafetyStock || 0),
+    0
+  );
+
+});
+
 
 module.exports = mongoose.model("Product", productSchema);

@@ -4,6 +4,7 @@ const express =
 const {
     getInventoryHistory,
     adjustStock,
+    setOnlineSafetyStock,
 } =
     require(
         "../controllers/inventoryController"
@@ -34,6 +35,14 @@ router.get(
 );
 
 
+router.put(
+    "/product/:productId/safety-stock",
+    protect,
+    admin,
+    setOnlineSafetyStock
+);
+
+
 router.post(
     "/adjust",
     protect,
@@ -42,4 +51,5 @@ router.post(
 );
 
 
-module.exports = router;
+module.exports =
+    router;

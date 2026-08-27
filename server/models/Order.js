@@ -194,6 +194,64 @@ const paymentSchema = new mongoose.Schema(
       enum: Object.values(PAYMENT_STATUS),
       default: PAYMENT_STATUS.PENDING,
     },
+
+    provider: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    reference: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    providerOrderNo: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    transactionId: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    cashierUrl: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    providerStatus: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    failureCode: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    failureReason: {
+      type: String,
+      default: "",
+      trim: true,
+    },
+
+    paidAt: {
+      type: Date,
+      default: null,
+    },
+
+    inventoryRestored: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     _id: false,

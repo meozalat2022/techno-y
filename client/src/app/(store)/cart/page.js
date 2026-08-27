@@ -10,24 +10,16 @@ import {
     Trash2,
 } from "lucide-react";
 
+import SafeImage from
+    "@/components/store/SafeImage";
+
 import {
     useCart,
 } from "@/context/CartContext";
 
 
-const formatCurrency =
-    value =>
-        new Intl.NumberFormat(
-            "ar-EG",
-            {
-                style: "currency",
-                currency: "EGP",
-                maximumFractionDigits: 2,
-            }
-        ).format(
-            Number(value) ||
-            0
-        );
+import formatCurrency from
+    "@/utils/formatCurrency";
 
 
 export default function CartPage() {
@@ -385,7 +377,7 @@ function CartItem({
                             ?.url
                             ? (
 
-                                <img
+                                <SafeImage
                                     src={
                                         item.image.url
                                     }

@@ -1,68 +1,82 @@
-const express = require("express");
+const express =
+    require("express");
 
-const router = express.Router();
-
-
-const {
-  createBrand,
-  getBrands,
-  getBrandBySlug,
-  updateBrand,
-  deleteBrand,
-
-} = require("../controllers/brandController");
-
+const router =
+    express.Router();
 
 const {
-  protect,
+    createBrand,
+    getBrands,
+    getAdminBrands,
+    getBrandBySlug,
+    updateBrand,
+    deleteBrand,
+} =
+    require(
+        "../controllers/brandController"
+    );
 
-} = require("../middleware/authMiddleware");
-
+const {
+    protect,
+} =
+    require(
+        "../middleware/authMiddleware"
+    );
 
 const admin =
-require("../middleware/adminMiddleware");
+    require(
+        "../middleware/adminMiddleware"
+    );
 
-
-// Public
 
 router.get(
-  "/",
-  getBrands
+    "/",
+    getBrands
+);
+
+
+/*
+ * Keep this route BEFORE /:slug,
+ * otherwise "admin" would be treated
+ * as a brand slug.
+ */
+router.get(
+    "/admin/all",
+    protect,
+    admin,
+    getAdminBrands
 );
 
 
 router.get(
-  "/:slug",
-  getBrandBySlug
+    "/:slug",
+    getBrandBySlug
 );
 
-
-
-// Admin
 
 router.post(
-  "/",
-  protect,
-  admin,
-  createBrand
+    "/",
+    protect,
+    admin,
+    createBrand
 );
 
 
 router.put(
-  "/:id",
-  protect,
-  admin,
-  updateBrand
+    "/:id",
+    protect,
+    admin,
+    updateBrand
 );
 
 
 router.delete(
-  "/:id",
-  protect,
-  admin,
-  deleteBrand
+    "/:id",
+    protect,
+    admin,
+    deleteBrand
 );
 
 
-
-module.exports = router;
+module.exports =
+    router;

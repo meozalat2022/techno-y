@@ -38,18 +38,8 @@ import {
     useCart,
 } from "@/context/CartContext";
 
-const formatCurrency =
-    value =>
-        new Intl.NumberFormat(
-            "ar-EG",
-            {
-                style: "currency",
-                currency: "EGP",
-                maximumFractionDigits: 2,
-            }
-        ).format(
-            Number(value) || 0
-        );
+import formatCurrency from
+    "@/utils/formatCurrency";
 
 
 export default function ProductDetailsClient({

@@ -24,6 +24,8 @@ export default function robots() {
 
                     "/checkout",
 
+                    "/payment/",
+
                 ],
 
             },

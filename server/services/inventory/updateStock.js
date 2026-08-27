@@ -15,8 +15,44 @@ const updateStock = async ({
     productId,
     quantity,
     operation,
+    /*
+     * Used by ONLINE orders only.
+     * Store sales, purchases, returns and manual
+     * adjustments continue to operate on physical stock.
+     */
+    minimumRemainingStock = 0,
     session,
 }) => {
+
+    const safeQuantity =
+        Number(quantity);
+
+    const safeMinimumRemainingStock =
+        Math.max(
+            Number(
+                minimumRemainingStock
+            ) || 0,
+            0
+        );
+
+
+    if (
+        !Number.isInteger(
+            safeQuantity
+        ) ||
+        safeQuantity <=
+            0
+    ) {
+
+        throw new Error(
+            MESSAGES.VALIDATION
+                .MUST_BE_GREATER_THAN_ZERO(
+                    "Quantity"
+                )
+        );
+
+    }
+
 
     const product =
         await Product.findById(
@@ -46,16 +82,24 @@ const updateStock = async ({
 
         newStock =
             previousStock +
-            quantity;
+            safeQuantity;
 
     } else if (
         operation ===
         STOCK_OPERATIONS.DECREASE
     ) {
 
+        const availableForThisOperation =
+            Math.max(
+                previousStock -
+                    safeMinimumRemainingStock,
+                0
+            );
+
+
         if (
-            previousStock <
-            quantity
+            availableForThisOperation <
+            safeQuantity
         ) {
 
             throw new Error(
@@ -64,9 +108,10 @@ const updateStock = async ({
 
         }
 
+
         newStock =
             previousStock -
-            quantity;
+            safeQuantity;
 
     } else {
 
@@ -82,6 +127,11 @@ const updateStock = async ({
         newStock;
 
 
+    /*
+     * stockStatus represents PHYSICAL stock.
+     * Online availability is derived separately from
+     * stockQuantity - onlineSafetyStock.
+     */
     product.stockStatus =
         newStock > 0
             ? STOCK_STATUS.IN_STOCK
@@ -107,4 +157,5 @@ const updateStock = async ({
 };
 
 
-module.exports = updateStock;
+module.exports =
+    updateStock;

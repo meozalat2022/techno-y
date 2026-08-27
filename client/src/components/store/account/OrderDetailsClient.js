@@ -22,6 +22,9 @@ import {
     Truck,
 } from "lucide-react";
 
+import SafeImage from
+    "@/components/store/SafeImage";
+
 import {
     useAuth,
 } from "@/context/AuthContext";
@@ -29,19 +32,12 @@ import {
 import orderService from
     "@/services/orderService";
 
+import getApiErrorMessage from
+    "@/utils/getApiErrorMessage";
 
-const formatCurrency =
-    value =>
-        new Intl.NumberFormat(
-            "ar-EG",
-            {
-                style: "currency",
-                currency: "EGP",
-                maximumFractionDigits: 2,
-            }
-        ).format(
-            Number(value) || 0
-        );
+
+import formatCurrency from
+    "@/utils/formatCurrency";
 
 
 const formatDateTime =
@@ -100,6 +96,20 @@ export default function OrderDetailsClient({
     const [
         error,
         setError,
+    ] =
+        useState("");
+
+
+    const [
+        paymentAction,
+        setPaymentAction,
+    ] =
+        useState("");
+
+
+    const [
+        paymentActionError,
+        setPaymentActionError,
     ] =
         useState("");
 
@@ -200,6 +210,127 @@ export default function OrderDetailsClient({
             loadOrder,
         ]
     );
+
+
+    const completeOpayPayment =
+        async () => {
+
+            if (!order) {
+                return;
+            }
+
+
+            setPaymentAction(
+                "pay"
+            );
+
+            setPaymentActionError("");
+
+
+            try {
+
+                const response =
+                    await orderService
+                        .createOpayPayment(
+                            order.orderNumber
+                        );
+
+
+                const cashierUrl =
+                    response.data
+                        ?.cashierUrl;
+
+
+                if (!cashierUrl) {
+
+                    throw new Error(
+                        "لم يتم استلام رابط الدفع من OPay."
+                    );
+
+                }
+
+
+                window.sessionStorage
+                    .setItem(
+                        "technoy-opay-pending-order",
+                        order.orderNumber
+                    );
+
+
+                window.location.assign(
+                    cashierUrl
+                );
+
+
+            } catch (error) {
+
+                setPaymentActionError(
+                    getApiErrorMessage(
+                        error,
+                        "تعذر استكمال الدفع."
+                    )
+                );
+
+                setPaymentAction("");
+
+            }
+
+        };
+
+
+    const cancelPendingOpayOrder =
+        async () => {
+
+            if (!order) {
+                return;
+            }
+
+
+            const confirmed =
+                window.confirm(
+                    "هل تريد إلغاء الطلب؟ سيتم إغلاق عملية OPay وإعادة الكمية المحجوزة للمخزون."
+                );
+
+
+            if (!confirmed) {
+                return;
+            }
+
+
+            setPaymentAction(
+                "cancel"
+            );
+
+            setPaymentActionError("");
+
+
+            try {
+
+                await orderService
+                    .closeOpayPayment(
+                        order.orderNumber
+                    );
+
+
+                await loadOrder();
+
+
+            } catch (error) {
+
+                setPaymentActionError(
+                    getApiErrorMessage(
+                        error,
+                        "تعذر إلغاء الطلب."
+                    )
+                );
+
+            } finally {
+
+                setPaymentAction("");
+
+            }
+
+        };
 
 
     if (
@@ -408,6 +539,18 @@ export default function OrderDetailsClient({
 
                     <OrderSummary
                         order={order}
+                        paymentAction={
+                            paymentAction
+                        }
+                        paymentActionError={
+                            paymentActionError
+                        }
+                        onCompletePayment={
+                            completeOpayPayment
+                        }
+                        onCancelPayment={
+                            cancelPendingOpayOrder
+                        }
                     />
 
                 </div>
@@ -549,7 +692,7 @@ function OrderItem({
                     item.image?.url
                         ? (
 
-                            <img
+                            <SafeImage
                                 src={
                                     item.image.url
                                 }
@@ -826,7 +969,21 @@ function ShippingAddress({
 
 function OrderSummary({
     order,
+    paymentAction,
+    paymentActionError,
+    onCompletePayment,
+    onCancelPayment,
 }) {
+
+    const pendingOpay =
+        order.payment
+            ?.method ===
+            "opay" &&
+        order.payment
+            ?.status ===
+            "pending" &&
+        order.status !==
+            "cancelled";
 
     return (
 
@@ -965,8 +1122,12 @@ function OrderSummary({
                         "cod"
                             ? "الدفع عند الاستلام"
                             : order.payment
-                                ?.method ||
-                            "—"
+                                ?.method ===
+                                "opay"
+                                ? "الدفع الإلكتروني عبر OPay"
+                                : order.payment
+                                    ?.method ||
+                                "—"
                     }
                 />
 
@@ -985,6 +1146,147 @@ function OrderSummary({
                 />
 
             </div>
+
+
+            {
+                pendingOpay &&
+                (
+                    <div
+                        className="
+                            mt-6
+                            rounded-xl
+                            border
+                            border-amber-200
+                            bg-amber-50
+                            p-4
+                        "
+                    >
+
+                        <div
+                            className="
+                                text-sm
+                                font-black
+                                text-amber-800
+                            "
+                        >
+                            الدفع لم يكتمل بعد
+                        </div>
+
+
+                        <p
+                            className="
+                                mt-1
+                                text-xs
+                                leading-6
+                                text-amber-800/80
+                            "
+                        >
+                            يمكنك إكمال الدفع أو إلغاء الطلب وإعادة الكمية المحجوزة للمخزون.
+                        </p>
+
+
+                        <div
+                            className="
+                                mt-4
+                                space-y-2
+                            "
+                        >
+
+                            <button
+                                type="button"
+                                disabled={
+                                    Boolean(
+                                        paymentAction
+                                    )
+                                }
+                                onClick={
+                                    onCompletePayment
+                                }
+                                className="
+                                    flex
+                                    w-full
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    bg-[#1F4E5F]
+                                    px-5
+                                    py-3
+                                    text-sm
+                                    font-black
+                                    text-white
+                                    disabled:opacity-60
+                                "
+                            >
+                                {
+                                    paymentAction ===
+                                    "pay"
+                                        ? "جاري فتح OPay..."
+                                        : "إكمال الدفع عبر OPay"
+                                }
+                            </button>
+
+
+                            <button
+                                type="button"
+                                disabled={
+                                    Boolean(
+                                        paymentAction
+                                    )
+                                }
+                                onClick={
+                                    onCancelPayment
+                                }
+                                className="
+                                    flex
+                                    w-full
+                                    items-center
+                                    justify-center
+                                    rounded-xl
+                                    border
+                                    border-red-200
+                                    bg-red-50
+                                    px-5
+                                    py-3
+                                    text-sm
+                                    font-black
+                                    text-red-700
+                                    disabled:opacity-60
+                                "
+                            >
+                                {
+                                    paymentAction ===
+                                    "cancel"
+                                        ? "جاري الإلغاء..."
+                                        : "إلغاء الطلب"
+                                }
+                            </button>
+
+                        </div>
+
+
+                        {
+                            paymentActionError &&
+                            (
+                                <div
+                                    className="
+                                        mt-3
+                                        rounded-lg
+                                        bg-red-100
+                                        px-3
+                                        py-2
+                                        text-xs
+                                        leading-5
+                                        text-red-700
+                                    "
+                                >
+                                    {paymentActionError}
+                                </div>
+                            )
+                        }
+
+                    </div>
+                )
+            }
 
 
             {

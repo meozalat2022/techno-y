@@ -49,6 +49,7 @@ const updateProduct = async ({
      */
     delete data.stockQuantity;
     delete data.stockStatus;
+    delete data.onlineSafetyStock;
 
 
     if (data.title) {

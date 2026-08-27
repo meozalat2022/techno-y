@@ -25,6 +25,9 @@ import {
 import contactService from
     "@/services/contactService";
 
+import getApiErrorMessage from
+    "@/utils/getApiErrorMessage";
+
 
 const phoneNumbers = [
 
@@ -111,6 +114,96 @@ export default function ContactPageClient() {
 
             setError("");
 
+
+            const name =
+                form.name.trim();
+
+            const phone =
+                form.phone.trim();
+
+            const email =
+                form.email.trim();
+
+            const subject =
+                form.subject.trim();
+
+            const message =
+                form.message.trim();
+
+
+            if (!name) {
+
+                setError(
+                    "من فضلك أدخل الاسم."
+                );
+
+                return;
+
+            }
+
+
+            if (!phone) {
+
+                setError(
+                    "من فضلك أدخل رقم الهاتف."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                !/^01[0125][0-9]{8}$/
+                    .test(phone)
+            ) {
+
+                setError(
+                    "أدخل رقم موبايل مصري صحيح مكوّن من 11 رقمًا ويبدأ بـ 010 أو 011 أو 012 أو 015."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                email &&
+                !/^[^\s@]+@[^\s@]+\.[^\s@]+$/
+                    .test(email)
+            ) {
+
+                setError(
+                    "أدخل بريدًا إلكترونيًا صحيحًا."
+                );
+
+                return;
+
+            }
+
+
+            if (!subject) {
+
+                setError(
+                    "من فضلك أدخل موضوع الرسالة."
+                );
+
+                return;
+
+            }
+
+
+            if (!message) {
+
+                setError(
+                    "من فضلك اكتب رسالتك."
+                );
+
+                return;
+
+            }
+
+
             setSubmitting(true);
 
 
@@ -149,12 +242,10 @@ export default function ContactPageClient() {
             } catch (error) {
 
                 setError(
-
-                    error.response
-                        ?.data
-                        ?.message ||
-                    "تعذر إرسال الرسالة. حاول مرة أخرى."
-
+                    getApiErrorMessage(
+                        error,
+                        "تعذر إرسال الرسالة. حاول مرة أخرى."
+                    )
                 );
 
             } finally {
@@ -569,6 +660,7 @@ export default function ContactPageClient() {
 
 
                         <form
+                            noValidate
                             onSubmit={
                                 handleSubmit
                             }

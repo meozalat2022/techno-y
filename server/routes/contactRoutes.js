@@ -4,7 +4,6 @@ const express =
 const router =
     express.Router();
 
-
 const {
     contact,
 } =
@@ -12,9 +11,17 @@ const {
         "../controllers/contactController"
     );
 
+const {
+    contactLimiter,
+} =
+    require(
+        "../middleware/rateLimiters"
+    );
+
 
 router.post(
     "/",
+    contactLimiter,
     contact
 );
 

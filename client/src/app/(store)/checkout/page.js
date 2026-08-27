@@ -27,12 +27,18 @@ import {
     useAuth,
 } from "@/context/AuthContext";
 
+import SafeImage from
+    "@/components/store/SafeImage";
+
 import {
     useCart,
 } from "@/context/CartContext";
 
 import orderService from
     "@/services/orderService";
+
+import getApiErrorMessage from
+    "@/utils/getApiErrorMessage";
 
 
 const governorates = [
@@ -66,18 +72,8 @@ const governorates = [
 ];
 
 
-const formatCurrency =
-    value =>
-        new Intl.NumberFormat(
-            "ar-EG",
-            {
-                style: "currency",
-                currency: "EGP",
-                maximumFractionDigits: 2,
-            }
-        ).format(
-            Number(value) || 0
-        );
+import formatCurrency from
+    "@/utils/formatCurrency";
 
 
 export default function CheckoutPage() {
@@ -139,6 +135,13 @@ export default function CheckoutPage() {
         setCreatedOrder,
     ] =
         useState(null);
+
+
+    const [
+        paymentMethod,
+        setPaymentMethod,
+    ] =
+        useState("cod");
 
 
     useEffect(
@@ -219,9 +222,52 @@ export default function CheckoutPage() {
             }
 
 
-            setSubmitting(true);
-
             setError("");
+
+
+            if (
+                !form.governorate
+                    .trim()
+            ) {
+
+                setError(
+                    "من فضلك اختر محافظة الشحن."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                !form.city
+                    .trim()
+            ) {
+
+                setError(
+                    "من فضلك أدخل المدينة أو المنطقة."
+                );
+
+                return;
+
+            }
+
+
+            if (
+                !form.address
+                    .trim()
+            ) {
+
+                setError(
+                    "من فضلك أدخل عنوان الشحن بالتفصيل."
+                );
+
+                return;
+
+            }
+
+
+            setSubmitting(true);
 
 
             try {
@@ -270,18 +316,72 @@ export default function CheckoutPage() {
                             },
 
                             payment: {
-                                method: "cod",
+                                method:
+                                    paymentMethod,
                             },
 
                         });
 
 
-                setCreatedOrder(
-                    response.data
+                const order =
+                    response.data;
+
+
+                if (
+                    paymentMethod ===
+                    "cod"
+                ) {
+
+                    setCreatedOrder(
+                        order
+                    );
+
+
+                    clearCart();
+
+
+                    return;
+
+                }
+
+
+                /*
+                 * Keep the cart intact while the
+                 * customer is away on OPay.
+                 * It is cleared only after our
+                 * backend verifies SUCCESS.
+                 */
+                window.sessionStorage
+                    .setItem(
+                        "technoy-opay-pending-order",
+                        order.orderNumber
+                    );
+
+
+                const paymentResponse =
+                    await orderService
+                        .createOpayPayment(
+                            order.orderNumber
+                        );
+
+
+                const cashierUrl =
+                    paymentResponse.data
+                        ?.cashierUrl;
+
+
+                if (!cashierUrl) {
+
+                    throw new Error(
+                        "لم يتم استلام رابط الدفع من OPay."
+                    );
+
+                }
+
+
+                window.location.assign(
+                    cashierUrl
                 );
-
-
-                clearCart();
 
 
             } catch (error) {
@@ -291,7 +391,13 @@ export default function CheckoutPage() {
                     error.response
                         ?.data
                         ?.message ||
-                    "تعذر إنشاء الطلب. حاول مرة أخرى."
+                    error.message ||
+                    (
+                        paymentMethod ===
+                        "opay"
+                            ? "تعذر بدء الدفع الإلكتروني. حاول مرة أخرى."
+                            : "تعذر إنشاء الطلب. حاول مرة أخرى."
+                    )
 
                 );
 
@@ -428,7 +534,30 @@ export default function CheckoutPage() {
                 "
             >
 
+                {error && (
+
+                    <div
+                        className="
+                            mb-5
+                            rounded-2xl
+                            border
+                            border-red-200
+                            bg-red-50
+                            px-5
+                            py-4
+                            text-sm
+                            leading-6
+                            text-red-700
+                        "
+                    >
+                        {error}
+                    </div>
+
+                )}
+
+
                 <form
+                    noValidate
                     onSubmit={
                         handleSubmit
                     }
@@ -459,28 +588,15 @@ export default function CheckoutPage() {
                         />
 
 
-                        <PaymentSection />
+                        <PaymentSection
+                            paymentMethod={
+                                paymentMethod
+                            }
+                            setPaymentMethod={
+                                setPaymentMethod
+                            }
+                        />
 
-
-                        {error && (
-
-                            <div
-                                className="
-                                    rounded-2xl
-                                    border
-                                    border-red-200
-                                    bg-red-50
-                                    px-5
-                                    py-4
-                                    text-sm
-                                    leading-6
-                                    text-red-700
-                                "
-                            >
-                                {error}
-                            </div>
-
-                        )}
 
                     </div>
 
@@ -494,6 +610,9 @@ export default function CheckoutPage() {
                         }
                         submitting={
                             submitting
+                        }
+                        paymentMethod={
+                            paymentMethod
                         }
                     />
 
@@ -859,7 +978,28 @@ function ShippingAddressSection({
 }
 
 
-function PaymentSection() {
+function PaymentSection({
+    paymentMethod,
+    setPaymentMethod,
+}) {
+
+    const options = [
+        {
+            value: "cod",
+            title:
+                "الدفع عند الاستلام",
+            description:
+                "ادفع قيمة الطلب عند استلامه.",
+        },
+        {
+            value: "opay",
+            title:
+                "الدفع الإلكتروني عبر OPay",
+            description:
+                "سيتم تحويلك إلى صفحة OPay الآمنة لإتمام الدفع، ثم نتحقق من العملية قبل تأكيد الدفع.",
+        },
+    ];
+
 
     return (
 
@@ -919,8 +1059,7 @@ function PaymentSection() {
                             text-[#6B6862]
                         "
                     >
-                        طرق الدفع الإلكتروني ستضاف
-                        لاحقاً
+                        اختر الطريقة المناسبة لإتمام طلبك.
                     </p>
 
                 </div>
@@ -928,58 +1067,133 @@ function PaymentSection() {
             </div>
 
 
-            <label
+            <div
                 className="
                     mt-5
-                    flex
-                    cursor-pointer
-                    items-start
-                    gap-3
-                    rounded-xl
-                    border
-                    border-[#D9D0C4]
-                    bg-[#FAF6EE]
-                    p-4
+                    space-y-3
                 "
             >
 
-                <input
-                    type="radio"
-                    checked
-                    readOnly
-                    className="
-                        mt-1
-                    "
-                />
+                {
+                    options.map(
+                        option => {
+
+                            const selected =
+                                paymentMethod ===
+                                option.value;
 
 
-                <div>
+                            return (
 
+                                <label
+                                    key={
+                                        option.value
+                                    }
+                                    className={`
+                                        flex
+                                        cursor-pointer
+                                        items-start
+                                        gap-3
+                                        rounded-xl
+                                        border
+                                        p-4
+                                        transition
+                                        ${
+                                            selected
+                                                ? "border-[#1F4E5F] bg-[#F3F7F8]"
+                                                : "border-[#D9D0C4] bg-[#FFFEFC] hover:bg-[#FAF6EE]"
+                                        }
+                                    `}
+                                >
+
+                                    <input
+                                        type="radio"
+                                        name="paymentMethod"
+                                        value={
+                                            option.value
+                                        }
+                                        checked={
+                                            selected
+                                        }
+                                        onChange={
+                                            () =>
+                                                setPaymentMethod(
+                                                    option.value
+                                                )
+                                        }
+                                        className="
+                                            mt-1
+                                            accent-[#1F4E5F]
+                                        "
+                                    />
+
+
+                                    <div>
+
+                                        <div
+                                            className="
+                                                text-sm
+                                                font-black
+                                                text-[#252525]
+                                            "
+                                        >
+                                            {
+                                                option.title
+                                            }
+                                        </div>
+
+
+                                        <div
+                                            className="
+                                                mt-1
+                                                text-xs
+                                                leading-5
+                                                text-[#6B6862]
+                                            "
+                                        >
+                                            {
+                                                option.description
+                                            }
+                                        </div>
+
+                                    </div>
+
+                                </label>
+
+                            );
+
+                        }
+                    )
+                }
+
+            </div>
+
+
+            {
+                paymentMethod ===
+                "opay" &&
+                (
                     <div
                         className="
-                            text-sm
-                            font-black
-                            text-[#252525]
-                        "
-                    >
-                        الدفع عند الاستلام
-                    </div>
-
-
-                    <div
-                        className="
-                            mt-1
+                            mt-4
+                            rounded-xl
+                            border
+                            border-[#E7E0D5]
+                            bg-[#FAF6EE]
+                            px-4
+                            py-3
                             text-xs
-                            leading-5
+                            leading-6
                             text-[#6B6862]
                         "
                     >
-                        ادفع قيمة الطلب عند استلامه
+                        لن نعتبر الطلب مدفوعًا بمجرد
+                        الرجوع من صفحة الدفع. يتم
+                        التحقق من حالة العملية مع OPay
+                        أولًا لحماية طلبك.
                     </div>
-
-                </div>
-
-            </label>
+                )
+            }
 
         </section>
 
@@ -992,6 +1206,7 @@ function CheckoutSummary({
     items,
     subtotal,
     submitting,
+    paymentMethod,
 }) {
 
     return (
@@ -1064,6 +1279,17 @@ function CheckoutSummary({
                         formatCurrency(
                             subtotal
                         )
+                    }
+                />
+
+
+                <SummaryRow
+                    label="طريقة الدفع"
+                    value={
+                        paymentMethod ===
+                        "opay"
+                            ? "OPay"
+                            : "الدفع عند الاستلام"
                     }
                 />
 
@@ -1156,8 +1382,18 @@ function CheckoutSummary({
 
                 {
                     submitting
-                        ? "جاري إنشاء الطلب..."
-                        : "تأكيد الطلب"
+                        ? (
+                            paymentMethod ===
+                            "opay"
+                                ? "جاري تحويلك إلى OPay..."
+                                : "جاري إنشاء الطلب..."
+                        )
+                        : (
+                            paymentMethod ===
+                            "opay"
+                                ? "الدفع الآن عبر OPay"
+                                : "تأكيد الطلب"
+                        )
                 }
 
             </button>
@@ -1238,7 +1474,7 @@ function SummaryItem({
                     item.image?.url
                         ? (
 
-                            <img
+                            <SafeImage
                                 src={
                                     item.image.url
                                 }

@@ -1,6 +1,5 @@
 import api from "@/lib/api";
 
-
 const register = async ({
     firstName,
     lastName,
@@ -8,7 +7,6 @@ const register = async ({
     phone,
     password,
 }) => {
-
     const response =
         await api.post(
             "/auth/register",
@@ -21,17 +19,13 @@ const register = async ({
             }
         );
 
-
     return response.data;
-
 };
-
 
 const login = async ({
     email,
     password,
 }) => {
-
     const response =
         await api.post(
             "/auth/login",
@@ -41,50 +35,63 @@ const login = async ({
             }
         );
 
-
     return response.data;
-
 };
 
-
 const logout = async () => {
-
     const response =
         await api.post(
             "/auth/logout"
         );
 
-
     return response.data;
-
 };
-
 
 const getCurrentUser =
     async () => {
+        const response =
+            await api.get(
+                "/auth/me"
+            );
 
-    const response =
-        await api.get(
-            "/auth/me"
-        );
+        return response.data;
+    };
 
+const forgotPassword =
+    async email => {
+        const response =
+            await api.post(
+                "/auth/forgot-password",
+                { email }
+            );
 
-    return response.data;
+        return response.data;
+    };
 
-};
+const resetPassword =
+    async ({
+        token,
+        password,
+    }) => {
+        const response =
+            await api.post(
+                "/auth/reset-password",
+                {
+                    token,
+                    password,
+                }
+            );
 
+        return response.data;
+    };
 
 const authService = {
-
     register,
-
     login,
-
     logout,
-
     getCurrentUser,
-
+    forgotPassword,
+    resetPassword,
 };
-
 
 export default authService;

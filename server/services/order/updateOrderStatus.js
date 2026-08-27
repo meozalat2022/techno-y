@@ -36,10 +36,51 @@ const REFERENCE_TYPES =
     );
 
 
+const applyPaymentPatch = (
+    order,
+    paymentPatch
+) => {
+
+    if (
+        !paymentPatch ||
+        typeof paymentPatch !==
+            "object"
+    ) {
+        return;
+    }
+
+
+    Object.entries(
+        paymentPatch
+    ).forEach(
+        ([
+            key,
+            value,
+        ]) => {
+
+            if (
+                value !==
+                undefined
+            ) {
+
+                order.payment[
+                    key
+                ] =
+                    value;
+
+            }
+
+        }
+    );
+
+};
+
+
 const updateOrderStatus = async ({
     orderNumber,
     status,
     user,
+    paymentPatch = null,
 }) => {
 
     if (
@@ -65,143 +106,199 @@ const updateOrderStatus = async ({
         await mongoose.startSession();
 
 
+    let updatedOrder =
+        null;
+
+
     try {
 
-        session.startTransaction();
+        /*
+         * withTransaction() automatically retries
+         * transient transaction errors such as
+         * MongoDB write conflicts.
+         *
+         * This is important for OPay because the
+         * merchant /close request and OPay callback
+         * can reconcile the same order concurrently.
+         */
+        await session.withTransaction(
+            async () => {
+
+                const order =
+                    await Order.findOne({
+                        orderNumber,
+                    })
+                        .session(
+                            session
+                        );
 
 
-        const order =
-            await Order.findOne({
-                orderNumber,
-            })
-                .session(session);
+                if (!order) {
+
+                    throw new Error(
+                        MESSAGES.ORDER
+                            .NOT_FOUND
+                    );
+
+                }
 
 
-        if (!order) {
-
-            throw new Error(
-                MESSAGES.ORDER.NOT_FOUND
-            );
-
-        }
+                const alreadyAtStatus =
+                    order.status ===
+                    newStatus;
 
 
-        const allowedStatuses =
-            ORDER_STATUS_FLOW[
-                order.status
-            ] || [];
+                /*
+                 * Treat an already-applied status
+                 * as idempotent instead of rejecting
+                 * it as an invalid transition.
+                 *
+                 * If an old/inconsistent cancelled
+                 * order somehow has not had inventory
+                 * restored, the cancellation block
+                 * below can still repair it.
+                 */
+                if (
+                    !alreadyAtStatus
+                ) {
+
+                    const allowedStatuses =
+                        ORDER_STATUS_FLOW[
+                            order.status
+                        ] || [];
 
 
-        if (
-            !allowedStatuses.includes(
-                newStatus
-            )
-        ) {
+                    if (
+                        !allowedStatuses
+                            .includes(
+                                newStatus
+                            )
+                    ) {
 
-            throw new Error(
-                MESSAGES.ORDER
-                    .INVALID_STATUS_TRANSITION(
-                        order.status,
-                        newStatus
-                    )
-            );
+                        throw new Error(
+                            MESSAGES.ORDER
+                                .INVALID_STATUS_TRANSITION(
+                                    order.status,
+                                    newStatus
+                                )
+                        );
 
-        }
+                    }
 
-
-        if (
-            newStatus ===
-            ORDER_STATUS.CANCELLED
-        ) {
-
-            for (
-                const item
-                of order.items
-            ) {
-
-                const stockUpdate =
-                    await inventoryService
-                        .updateStock({
-
-                            productId:
-                                item.product,
-
-                            quantity:
-                                item.quantity,
-
-                            operation:
-                                STOCK_OPERATIONS
-                                    .INCREASE,
-
-                            session,
-
-                        });
+                }
 
 
-                await inventoryService
-                    .createMovement({
+                if (
+                    newStatus ===
+                        ORDER_STATUS
+                            .CANCELLED &&
+                    !order.payment
+                        .inventoryRestored
+                ) {
 
-                        product:
-                            item.product,
+                    for (
+                        const item
+                        of order.items
+                    ) {
 
-                        type:
-                            INVENTORY_MOVEMENT_TYPES
-                                .ORDER_CANCELLATION,
+                        const stockUpdate =
+                            await inventoryService
+                                .updateStock({
 
-                        quantity:
-                            item.quantity,
+                                    productId:
+                                        item.product,
 
-                        previousStock:
-                            stockUpdate
-                                .previousStock,
+                                    quantity:
+                                        item.quantity,
 
-                        newStock:
-                            stockUpdate
-                                .newStock,
+                                    operation:
+                                        STOCK_OPERATIONS
+                                            .INCREASE,
 
-                        referenceType:
-                            REFERENCE_TYPES.ORDER,
+                                    session,
 
-                        reference:
-                            order.orderNumber,
+                                });
 
-                        notes:
-                            "Order cancelled",
 
-                        performedBy:
-                            user?._id ||
-                            null,
+                        await inventoryService
+                            .createMovement({
 
-                        session,
+                                product:
+                                    item.product,
 
-                    });
+                                type:
+                                    INVENTORY_MOVEMENT_TYPES
+                                        .ORDER_CANCELLATION,
+
+                                quantity:
+                                    item.quantity,
+
+                                previousStock:
+                                    stockUpdate
+                                        .previousStock,
+
+                                newStock:
+                                    stockUpdate
+                                        .newStock,
+
+                                referenceType:
+                                    REFERENCE_TYPES
+                                        .ORDER,
+
+                                reference:
+                                    order
+                                        .orderNumber,
+
+                                notes:
+                                    "Order cancelled",
+
+                                performedBy:
+                                    user?._id ||
+                                    null,
+
+                                session,
+
+                            });
+
+                    }
+
+
+                    order.payment
+                        .inventoryRestored =
+                        true;
+
+                }
+
+
+                /*
+                 * For terminal OPay states we persist
+                 * the payment result in the SAME
+                 * transaction as the cancellation /
+                 * inventory restoration.
+                 */
+                applyPaymentPatch(
+                    order,
+                    paymentPatch
+                );
+
+
+                order.status =
+                    newStatus;
+
+
+                await order.save({
+                    session,
+                });
+
+
+                updatedOrder =
+                    order;
 
             }
-
-        }
-
-
-        order.status =
-            newStatus;
+        );
 
 
-        await order.save({
-            session,
-        });
-
-
-        await session
-            .commitTransaction();
-
-
-        return order;
-
-    } catch (error) {
-
-        await session
-            .abortTransaction();
-
-        throw error;
+        return updatedOrder;
 
     } finally {
 

@@ -5,19 +5,12 @@ import {
     ImageOff,
 } from "lucide-react";
 
+import SafeImage from
+    "@/components/store/SafeImage";
 
-const formatCurrency =
-    value =>
-        new Intl.NumberFormat(
-            "ar-EG",
-            {
-                style: "currency",
-                currency: "EGP",
-                maximumFractionDigits: 2,
-            }
-        ).format(
-            Number(value) || 0
-        );
+
+import formatCurrency from
+    "@/utils/formatCurrency";
 
 
 export default function ProductCard({
@@ -77,11 +70,9 @@ export default function ProductCard({
                     image
                         ? (
 
-                            <img
+                            <SafeImage
                                 src={image}
-                                alt={
-                                    product.title
-                                }
+                                alt={product.title}
                                 className="
                                     h-full
                                     w-full
@@ -91,6 +82,7 @@ export default function ProductCard({
                                     duration-300
                                     group-hover:scale-105
                                 "
+                                iconSize={42}
                             />
 
                         )

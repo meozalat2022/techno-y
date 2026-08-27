@@ -1,67 +1,58 @@
 const express = require("express");
-
 const router = express.Router();
 
+const {
+    createCategory,
+    getCategories,
+    getAdminCategories,
+    getCategoryBySlug,
+    updateCategory,
+    deleteCategory,
+} = require("../controllers/categoryController");
 
 const {
-createCategory,
-getCategories,
-getCategoryBySlug,
-updateCategory,
-deleteCategory
-
-}=require("../controllers/categoryController");
-
-
-const {
-protect
-}=require("../middleware/authMiddleware");
-
+    protect,
+} = require("../middleware/authMiddleware");
 
 const admin =
-require("../middleware/adminMiddleware");
-
-
-// Public
+    require("../middleware/adminMiddleware");
 
 router.get(
-"/",
-getCategories
+    "/",
+    getCategories
 );
-
 
 router.get(
-"/:slug",
-getCategoryBySlug
+    "/admin/all",
+    protect,
+    admin,
+    getAdminCategories
 );
 
-
-
-// Admin
+router.get(
+    "/:slug",
+    getCategoryBySlug
+);
 
 router.post(
-"/",
-protect,
-admin,
-createCategory
+    "/",
+    protect,
+    admin,
+    createCategory
 );
-
 
 router.put(
-"/:id",
-protect,
-admin,
-updateCategory
+    "/:id",
+    protect,
+    admin,
+    updateCategory
 );
-
 
 router.delete(
-"/:id",
-protect,
-admin,
-deleteCategory
+    "/:id",
+    protect,
+    admin,
+    deleteCategory
 );
-
-
 
 module.exports = router;

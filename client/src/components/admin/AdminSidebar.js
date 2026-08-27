@@ -10,10 +10,12 @@ import {
 import {
     Boxes,
     ClipboardList,
+    FolderTree,
     LayoutDashboard,
     Package,
     RotateCcw,
     ShoppingCart,
+    Tags,
     Truck,
     Undo2,
     X,
@@ -45,6 +47,28 @@ const links = [
 
         icon:
             Package,
+    },
+
+    {
+        label:
+            "الأقسام",
+
+        href:
+            "/admin/categories",
+
+        icon:
+            FolderTree,
+    },
+
+    {
+        label:
+            "الماركات",
+
+        href:
+            "/admin/brands",
+
+        icon:
+            Tags,
     },
 
     {
