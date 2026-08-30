@@ -7,6 +7,9 @@ const Order =
 const inventoryService =
     require("../inventory");
 
+const loyaltyService =
+    require("../loyalty");
+
 const MESSAGES =
     require("../../constants/messages");
 
@@ -284,6 +287,48 @@ const updateOrderStatus = async ({
 
                 order.status =
                     newStatus;
+
+
+                if (
+                    newStatus ===
+                    ORDER_STATUS
+                        .CANCELLED
+                ) {
+
+                    await loyaltyService
+                        .handleOrderCancellation({
+
+                            order,
+
+                            performedBy:
+                                user,
+
+                            session,
+
+                        });
+
+                }
+
+
+                if (
+                    newStatus ===
+                    ORDER_STATUS
+                        .DELIVERED
+                ) {
+
+                    await loyaltyService
+                        .handleOrderDelivered({
+
+                            order,
+
+                            performedBy:
+                                user,
+
+                            session,
+
+                        });
+
+                }
 
 
                 await order.save({

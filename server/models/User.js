@@ -45,6 +45,30 @@ const userSchema = new mongoose.Schema(
             default: true,
         },
 
+        loyalty: {
+            /*
+             * Spendable balance.
+             * It may temporarily become negative after a
+             * return if the customer already spent points
+             * that were earned from the returned order.
+             * Checkout always treats negative as zero
+             * spendable points.
+             */
+            availablePoints: {
+                type: Number,
+                default: 0,
+            },
+
+            /*
+             * Earned from placed orders but not spendable
+             * until the order reaches DELIVERED.
+             */
+            pendingPoints: {
+                type: Number,
+                default: 0,
+            },
+        },
+
         passwordResetToken: {
             type: String,
             default: undefined,

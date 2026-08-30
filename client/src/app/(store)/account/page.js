@@ -12,6 +12,7 @@ import {
 } from "next/navigation";
 
 import {
+    Coins,
     LogOut,
     PackageSearch,
     UserRound,
@@ -189,7 +190,7 @@ export default function AccountPage() {
                     mt-8
                     grid
                     gap-5
-                    md:grid-cols-2
+                    md:grid-cols-3
                 "
             >
 
@@ -267,6 +268,17 @@ export default function AccountPage() {
                     </div>
 
                 </div>
+
+
+                <Link
+                    href="/account/loyalty"
+                    className="group rounded-2xl border border-[#E7E0D5] bg-[#FFFEFC] p-6 transition hover:border-[#D9D0C4] hover:shadow-sm"
+                >
+                    <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-[#F5B82E]/20 text-[#8A6400]"><Coins size={21} /></div>
+                    <h2 className="mt-4 font-black text-[#252525]">نقاطي</h2>
+                    <p className="mt-2 text-sm leading-7 text-[#6B6862]">تابع نقاط الولاء المتاحة والمعلقة وسجل عملياتك.</p>
+                    <div className="mt-5 text-sm font-bold text-[#3C3935]">عرض نقاطي</div>
+                </Link>
 
 
                 <Link

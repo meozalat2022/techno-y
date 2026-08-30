@@ -7,17 +7,18 @@ const saveOrder = async ({
     payment,
     orderItems,
     totals,
+    loyalty,
     user,
     session,
 }) => {
 
 
- 
+
    const [order ]= await Order.create(
     [{
         orderNumber,
 
-      
+
         customer: {
     user: user._id,
     firstName: user.firstName,
@@ -40,6 +41,8 @@ const saveOrder = async ({
         items: orderItems,
 
         totals,
+
+        loyalty,
     }],
     {
         session,

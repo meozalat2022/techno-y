@@ -1,6 +1,10 @@
 "use client";
 
 
+import {
+    useEffect,
+} from "react";
+
 import Link from "next/link";
 
 import {
@@ -21,6 +25,12 @@ import {
 import formatCurrency from
     "@/utils/formatCurrency";
 
+import getOnlineAvailableQuantity from
+    "@/utils/getOnlineAvailableQuantity";
+
+import productService from
+    "@/services/productService";
+
 
 export default function CartPage() {
 
@@ -30,10 +40,91 @@ export default function CartPage() {
         itemCount,
         subtotal,
         updateQuantity,
+        syncProductAvailability,
         removeItem,
         clearCart,
     } =
         useCart();
+
+
+    useEffect(
+        () => {
+
+            if (
+                !hydrated ||
+                items.length ===
+                    0
+            ) {
+                return;
+            }
+
+
+            let active =
+                true;
+
+
+            const refreshAvailability =
+                async () => {
+
+                    const products =
+                        await Promise.all(
+                            items.map(
+                                async item => {
+
+                                    try {
+
+                                        const response =
+                                            await productService
+                                                .getProductBySlug(
+                                                    item.slug
+                                                );
+
+
+                                        return (
+                                            response.data ||
+                                            null
+                                        );
+
+                                    } catch {
+
+                                        return null;
+
+                                    }
+
+                                }
+                            )
+                        );
+
+
+                    if (!active) {
+                        return;
+                    }
+
+
+                    syncProductAvailability(
+                        products.filter(
+                            Boolean
+                        )
+                    );
+
+                };
+
+
+            refreshAvailability();
+
+
+            return () => {
+                active =
+                    false;
+            };
+
+        },
+        [
+            hydrated,
+            items.length,
+            syncProductAvailability,
+        ]
+    );
 
 
     if (!hydrated) {
@@ -335,6 +426,12 @@ function CartItem({
         item.quantity;
 
 
+    const onlineAvailableQuantity =
+        getOnlineAvailableQuantity(
+            item
+        );
+
+
     return (
 
         <div
@@ -598,7 +695,27 @@ function CartItem({
 
 
                     {
-                        item.stockQuantity <=
+                        onlineAvailableQuantity <=
+                        0 &&
+                        (
+                            <div
+                                className="
+                                    mt-3
+                                    text-xs
+                                    font-semibold
+                                    text-red-700
+                                "
+                            >
+                                هذا المنتج غير متوفر أونلاين حاليًا. احذفه من السلة قبل إتمام الطلب.
+                            </div>
+                        )
+                    }
+
+
+                    {
+                        onlineAvailableQuantity >
+                        0 &&
+                        onlineAvailableQuantity <=
                         5 &&
                         (
 
@@ -612,7 +729,7 @@ function CartItem({
                             >
                                 المتاح حالياً:{" "}
                                 {
-                                    item.stockQuantity
+                                    onlineAvailableQuantity
                                 }
                             </div>
 
@@ -635,6 +752,12 @@ function QuantityControl({
     updateQuantity,
 }) {
 
+    const onlineAvailableQuantity =
+        getOnlineAvailableQuantity(
+            item
+        );
+
+
     return (
 
         <div
@@ -652,8 +775,10 @@ function QuantityControl({
             <button
                 type="button"
                 disabled={
+                    onlineAvailableQuantity <=
+                    0 ||
                     item.quantity >=
-                    item.stockQuantity
+                    onlineAvailableQuantity
                 }
                 onClick={
                     () =>

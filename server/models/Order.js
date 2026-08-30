@@ -325,6 +325,68 @@ const totalsSchema = new mongoose.Schema(
   }
 );
 
+// Loyalty Schema
+
+const loyaltySchema =
+  new mongoose.Schema(
+    {
+      pointsRedeemed: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+      redemptionAmount: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+      pointsPending: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+      pointsAwarded: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+      pointsReversed: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+      redeemedPointsRestored: {
+        type: Number,
+        default: 0,
+        min: 0,
+      },
+
+      pendingCancelled: {
+        type: Boolean,
+        default: false,
+      },
+
+      redemptionRestoredOnCancellation: {
+        type: Boolean,
+        default: false,
+      },
+
+      awardedAt: {
+        type: Date,
+        default: null,
+      },
+    },
+    {
+      _id: false,
+    }
+  );
+
+
 // order Schema
 
 
@@ -369,6 +431,11 @@ const orderSchema = new mongoose.Schema(
     totals: {
       type: totalsSchema,
       required: true,
+    },
+
+    loyalty: {
+      type: loyaltySchema,
+      default: () => ({}),
     },
 
     status: {

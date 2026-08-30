@@ -12,6 +12,9 @@ import SafeImage from
 import formatCurrency from
     "@/utils/formatCurrency";
 
+import getOnlineAvailableQuantity from
+    "@/utils/getOnlineAvailableQuantity";
+
 
 export default function ProductCard({
     product,
@@ -31,6 +34,17 @@ export default function ProductCard({
 
     const image =
         product.images?.[0]?.url;
+
+
+    const onlineAvailableQuantity =
+        getOnlineAvailableQuantity(
+            product
+        );
+
+
+    const outOfStock =
+        onlineAvailableQuantity <=
+        0;
 
 
     return (
@@ -127,6 +141,29 @@ export default function ProductCard({
                             عرض
                         </span>
 
+                    )
+                }
+
+
+                {
+                    outOfStock &&
+                    (
+                        <span
+                            className="
+                                absolute
+                                bottom-3
+                                right-3
+                                rounded-full
+                                bg-slate-900/90
+                                px-3
+                                py-1
+                                text-xs
+                                font-bold
+                                text-white
+                            "
+                        >
+                            غير متوفر أونلاين
+                        </span>
                     )
                 }
 

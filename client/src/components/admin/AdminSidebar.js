@@ -14,6 +14,7 @@ import {
     LayoutDashboard,
     Package,
     RotateCcw,
+    ScanLine,
     ShoppingCart,
     Tags,
     Truck,
@@ -80,6 +81,17 @@ const links = [
 
         icon:
             Boxes,
+    },
+
+    {
+        label:
+            "مبيعات المحل",
+
+        href:
+            "/admin/store-sales",
+
+        icon:
+            ScanLine,
     },
 
     {

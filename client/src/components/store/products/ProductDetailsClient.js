@@ -41,6 +41,9 @@ import {
 import formatCurrency from
     "@/utils/formatCurrency";
 
+import getOnlineAvailableQuantity from
+    "@/utils/getOnlineAvailableQuantity";
+
 
 export default function ProductDetailsClient({
     slug,
@@ -293,25 +296,29 @@ export default function ProductDetailsClient({
             : product?.regularPrice;
 
 
+    const onlineAvailableQuantity =
+        getOnlineAvailableQuantity(
+            product
+        );
+
+
     const outOfStock =
         !product ||
-        product.stockQuantity <=
-        0 ||
-        product.stockStatus ===
-        "out-of-stock";
+        onlineAvailableQuantity <=
+            0;
 
 
     const lowStock =
         product &&
         !outOfStock &&
-        product.stockQuantity <=
+        onlineAvailableQuantity <=
         product.lowStockThreshold;
 
 
     const maxQuantity =
         product
             ? Math.max(
-                product.stockQuantity,
+                onlineAvailableQuantity,
                 1
             )
             : 1;
@@ -714,6 +721,26 @@ export default function ProductDetailsClient({
                                     lowStock
                                 }
                             />
+
+
+                            {
+                                !outOfStock &&
+                                onlineAvailableQuantity <=
+                                    5 &&
+                                (
+                                    <span
+                                        className="
+                                            font-semibold
+                                            text-amber-700
+                                        "
+                                    >
+                                        المتاح أونلاين:{" "}
+                                        {
+                                            onlineAvailableQuantity
+                                        }
+                                    </span>
+                                )
+                            }
 
                         </div>
 

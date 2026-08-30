@@ -1101,6 +1101,19 @@ function OrderSummary({
             </div>
 
 
+            {(Number(order.loyalty?.pointsRedeemed || 0) > 0 || Number(order.loyalty?.pointsPending || 0) > 0 || Number(order.loyalty?.pointsAwarded || 0) > 0) && (
+                <div className="mt-5 rounded-xl border border-[#F0DFC0] bg-[#FFF9EB] p-4">
+                    <div className="text-sm font-black text-[#252525]">نقاط الولاء</div>
+                    <div className="mt-3 space-y-2 text-xs text-[#6B6862]">
+                        {Number(order.loyalty?.pointsRedeemed || 0) > 0 && <LoyaltyInfoRow label="نقاط مستخدمة" value={`${order.loyalty.pointsRedeemed} نقطة`} />}
+                        {Number(order.loyalty?.redemptionAmount || 0) > 0 && <LoyaltyInfoRow label="قيمة خصم النقاط" value={formatCurrency(order.loyalty.redemptionAmount)} />}
+                        {Number(order.loyalty?.pointsAwarded || 0) > 0 ? <LoyaltyInfoRow label="نقاط مكتسبة" value={`${order.loyalty.pointsAwarded} نقطة متاحة`} /> : Number(order.loyalty?.pointsPending || 0) > 0 && !order.loyalty?.pendingCancelled && <LoyaltyInfoRow label="نقاط متوقعة" value={`${order.loyalty.pointsPending} نقطة — تتاح بعد التسليم`} />}
+                        {Number(order.loyalty?.pointsReversed || 0) > 0 && <LoyaltyInfoRow label="نقاط تم عكسها بعد مرتجع" value={`${order.loyalty.pointsReversed} نقطة`} />}
+                    </div>
+                </div>
+            )}
+
+
             <div
                 className="
                     mt-6
@@ -1479,6 +1492,11 @@ function Info({
 
     );
 
+}
+
+
+function LoyaltyInfoRow({ label, value }) {
+    return <div className="flex items-center justify-between gap-4"><span>{label}</span><strong className="text-left text-[#252525]">{value}</strong></div>;
 }
 
 

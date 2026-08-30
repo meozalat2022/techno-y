@@ -6,6 +6,9 @@ import {
 } from "@/lib/serverApi";
 
 
+import getOnlineAvailableQuantity from
+    "@/utils/getOnlineAvailableQuantity";
+
 const SITE_URL =
     "https://techno-y.com";
 
@@ -274,7 +277,9 @@ function ProductStructuredData({
                 Number(price),
 
             availability:
-                product.stockQuantity >
+                getOnlineAvailableQuantity(
+                    product
+                ) >
                 0
                     ? "https://schema.org/InStock"
                     : "https://schema.org/OutOfStock",

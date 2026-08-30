@@ -11,6 +11,7 @@ import {
     History,
     RefreshCw,
     Search,
+    ShieldCheck,
     SlidersHorizontal,
 } from "lucide-react";
 
@@ -25,6 +26,9 @@ import StockAdjustmentModal from
 
 import InventoryHistoryModal from
     "@/components/admin/inventory/InventoryHistoryModal";
+
+import SafetyStockModal from
+    "@/components/admin/inventory/SafetyStockModal";
 
 import ar from
     "@/locales/ar";
@@ -103,6 +107,13 @@ export default function InventoryPage() {
     const [
         historyProduct,
         setHistoryProduct,
+    ] =
+        useState(null);
+
+
+    const [
+        safetyStockProduct,
+        setSafetyStockProduct,
     ] =
         useState(null);
 
@@ -252,6 +263,55 @@ export default function InventoryPage() {
                     ar.inventory
                         .adjustmentError
 
+                );
+
+            } finally {
+
+                setSaving(false);
+
+            }
+
+        };
+
+
+    const handleSafetyStock =
+        async payload => {
+
+            setSaving(true);
+
+            setError("");
+
+            setMessage("");
+
+
+            try {
+
+                await inventoryService
+                    .setOnlineSafetyStock(
+                        payload
+                    );
+
+
+                setSafetyStockProduct(
+                    null
+                );
+
+
+                setMessage(
+                    "تم تحديث مخزون الأمان للأونلاين بنجاح."
+                );
+
+
+                await loadProducts();
+
+
+            } catch (error) {
+
+                setError(
+                    error.response
+                        ?.data
+                        ?.message ||
+                    "تعذر تحديث مخزون الأمان."
                 );
 
             } finally {
@@ -497,6 +557,9 @@ export default function InventoryPage() {
                                     onHistory={
                                         setHistoryProduct
                                     }
+                                    onSafetyStock={
+                                        setSafetyStockProduct
+                                    }
                                 />
 
                             )
@@ -645,6 +708,30 @@ export default function InventoryPage() {
                 }
             />
 
+
+            <SafetyStockModal
+                open={
+                    Boolean(
+                        safetyStockProduct
+                    )
+                }
+                product={
+                    safetyStockProduct
+                }
+                saving={
+                    saving
+                }
+                onClose={
+                    () =>
+                        setSafetyStockProduct(
+                            null
+                        )
+                }
+                onSubmit={
+                    handleSafetyStock
+                }
+            />
+
         </div>
 
     );
@@ -656,6 +743,7 @@ function InventoryTable({
     products,
     onAdjust,
     onHistory,
+    onSafetyStock,
 }) {
 
     return (
@@ -669,7 +757,7 @@ function InventoryTable({
             <table
                 className="
                     w-full
-                    min-w-[900px]
+                    min-w-[1180px]
                     text-sm
                 "
             >
@@ -709,6 +797,14 @@ function InventoryTable({
                                 ar.inventory
                                     .currentStock
                             }
+                        </Head>
+
+                        <Head>
+                            مخزون الأمان
+                        </Head>
+
+                        <Head>
+                            المتاح أونلاين
                         </Head>
 
                         <Head>
@@ -857,6 +953,44 @@ function InventoryTable({
 
 
                                     <Cell>
+                                        {
+                                            product
+                                                .onlineSafetyStock ??
+                                            0
+                                        }
+                                    </Cell>
+
+
+                                    <Cell>
+
+                                        <strong
+                                            className="
+                                                text-blue-700
+                                            "
+                                        >
+                                            {
+                                                product
+                                                    .onlineAvailableQuantity ??
+                                                Math.max(
+                                                    Number(
+                                                        product
+                                                            .stockQuantity ||
+                                                        0
+                                                    ) -
+                                                    Number(
+                                                        product
+                                                            .onlineSafetyStock ||
+                                                        0
+                                                    ),
+                                                    0
+                                                )
+                                            }
+                                        </strong>
+
+                                    </Cell>
+
+
+                                    <Cell>
 
                                         <StockStatusBadge
                                             product={
@@ -908,6 +1042,39 @@ function InventoryTable({
                                                     ar.inventory
                                                         .adjustStock
                                                 }
+
+                                            </button>
+
+
+                                            <button
+                                                type="button"
+                                                onClick={
+                                                    () =>
+                                                        onSafetyStock(
+                                                            product
+                                                        )
+                                                }
+                                                className="
+                                                    flex
+                                                    items-center
+                                                    gap-2
+                                                    rounded-lg
+                                                    border
+                                                    border-blue-200
+                                                    px-3
+                                                    py-2
+                                                    text-xs
+                                                    font-medium
+                                                    text-blue-700
+                                                    hover:bg-blue-50
+                                                "
+                                            >
+
+                                                <ShieldCheck
+                                                    size={15}
+                                                />
+
+                                                مخزون الأمان
 
                                             </button>
 

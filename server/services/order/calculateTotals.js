@@ -1,26 +1,48 @@
 const calculateTotals = ({
     orderItems,
+    discount = 0,
 }) => {
 
     const subtotal =
         orderItems.reduce(
-            (sum, item) =>
+            (
+                sum,
+                item
+            ) =>
                 sum +
                 (
-                    item.pricing.finalPrice *
+                    item.pricing
+                        .finalPrice *
                     item.quantity
                 ),
             0
         );
 
-    const shipping = 0;
 
-    const discount = 0;
+    const shipping =
+        0;
+
+
+    const safeDiscount =
+        Math.min(
+            Math.max(
+                Number(
+                    discount
+                ) || 0,
+                0
+            ),
+            subtotal
+        );
+
 
     const total =
-        subtotal +
-        shipping -
-        discount;
+        Math.max(
+            subtotal +
+                shipping -
+                safeDiscount,
+            0
+        );
+
 
     return {
 
@@ -28,7 +50,8 @@ const calculateTotals = ({
 
         shipping,
 
-        discount,
+        discount:
+            safeDiscount,
 
         total,
 
@@ -36,4 +59,6 @@ const calculateTotals = ({
 
 };
 
-module.exports = calculateTotals;
+
+module.exports =
+    calculateTotals;

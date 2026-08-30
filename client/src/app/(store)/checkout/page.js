@@ -16,6 +16,7 @@ import {
 import {
     ArrowLeft,
     CheckCircle2,
+    Coins,
     MapPin,
     PackageCheck,
     ShieldCheck,
@@ -36,6 +37,9 @@ import {
 
 import orderService from
     "@/services/orderService";
+
+import loyaltyService from
+    "@/services/loyaltyService";
 
 import getApiErrorMessage from
     "@/utils/getApiErrorMessage";
@@ -144,6 +148,11 @@ export default function CheckoutPage() {
         useState("cod");
 
 
+    const [loyaltySummary, setLoyaltySummary] = useState(null);
+    const [loyaltyLoading, setLoyaltyLoading] = useState(false);
+    const [loyaltyPointsToRedeem, setLoyaltyPointsToRedeem] = useState(0);
+
+
     useEffect(
         () => {
 
@@ -169,6 +178,25 @@ export default function CheckoutPage() {
             router,
         ]
     );
+
+
+    useEffect(() => {
+        if (!user) return;
+        let active = true;
+        const loadLoyalty = async () => {
+            setLoyaltyLoading(true);
+            try {
+                const response = await loyaltyService.getMyLoyalty();
+                if (active) setLoyaltySummary(response.data);
+            } catch {
+                // Loyalty must never block normal checkout.
+            } finally {
+                if (active) setLoyaltyLoading(false);
+            }
+        };
+        loadLoyalty();
+        return () => { active = false; };
+    }, [user]);
 
 
     const cartItems =
@@ -205,6 +233,18 @@ export default function CheckoutPage() {
             );
 
         };
+
+
+    const loyaltyRules = loyaltySummary?.rules;
+    const spendablePoints = Math.max(Number(loyaltySummary?.spendablePoints || 0), 0);
+    const pointsPerEgp = Number(loyaltyRules?.pointsPerRedemptionEgp || 10);
+    const redemptionStep = Number(loyaltyRules?.redemptionStepPoints || 10);
+    const minimumRedemption = Number(loyaltyRules?.minimumRedemptionPoints || 100);
+    const maxPointsByOrder = Math.max(Math.floor((Math.max(Number(subtotal)-1,0)*pointsPerEgp)/redemptionStep)*redemptionStep,0);
+    const maxRedeemablePoints = Math.min(spendablePoints, maxPointsByOrder);
+    const safeRedeemedPoints = Math.min(Math.max(Number(loyaltyPointsToRedeem)||0,0), maxRedeemablePoints);
+    const loyaltyDiscount = safeRedeemedPoints / pointsPerEgp;
+    const checkoutTotal = Math.max(Number(subtotal)-loyaltyDiscount,0);
 
 
     const handleSubmit =
@@ -267,6 +307,12 @@ export default function CheckoutPage() {
             }
 
 
+            if (safeRedeemedPoints > 0 && safeRedeemedPoints < minimumRedemption) {
+                setError(`الحد الأدنى لاستخدام النقاط هو ${minimumRedemption} نقطة.`);
+                return;
+            }
+
+
             setSubmitting(true);
 
 
@@ -319,6 +365,9 @@ export default function CheckoutPage() {
                                 method:
                                     paymentMethod,
                             },
+
+                            loyaltyPointsToRedeem:
+                                safeRedeemedPoints,
 
                         });
 
@@ -588,6 +637,18 @@ export default function CheckoutPage() {
                         />
 
 
+                        <LoyaltySection
+                            summary={loyaltySummary}
+                            loading={loyaltyLoading}
+                            points={safeRedeemedPoints}
+                            setPoints={setLoyaltyPointsToRedeem}
+                            maxPoints={maxRedeemablePoints}
+                            minimumRedemption={minimumRedemption}
+                            redemptionStep={redemptionStep}
+                            pointsPerEgp={pointsPerEgp}
+                        />
+
+
                         <PaymentSection
                             paymentMethod={
                                 paymentMethod
@@ -614,6 +675,9 @@ export default function CheckoutPage() {
                         paymentMethod={
                             paymentMethod
                         }
+                        loyaltyPoints={safeRedeemedPoints}
+                        loyaltyDiscount={loyaltyDiscount}
+                        checkoutTotal={checkoutTotal}
                     />
 
                 </form>
@@ -978,6 +1042,24 @@ function ShippingAddressSection({
 }
 
 
+function LoyaltySection({ summary, loading, points, setPoints, maxPoints, minimumRedemption, redemptionStep, pointsPerEgp }) {
+    const spendable = Math.max(Number(summary?.spendablePoints || 0), 0);
+    if (loading) return <section className="rounded-2xl border border-[#E7E0D5] bg-[#FFFEFC] p-5 sm:p-6"><div className="text-sm text-[#6B6862]">جاري تحميل نقاط الولاء...</div></section>;
+    if (!summary) return null;
+    const canRedeem = maxPoints >= minimumRedemption;
+    const discount = points / pointsPerEgp;
+    return <section className="rounded-2xl border border-[#E7E0D5] bg-[#FFFEFC] p-5 sm:p-6">
+        <div className="flex items-center gap-3"><div className="flex h-10 w-10 items-center justify-center rounded-xl bg-[#F5B82E]/20 text-[#8A6400]"><Coins size={19}/></div><div><h2 className="font-black text-[#252525]">نقاط الولاء</h2><p className="mt-1 text-xs text-[#6B6862]">لديك {spendable} نقطة متاحة للاستخدام.</p></div></div>
+        <div className="mt-5 rounded-xl bg-[#FAF6EE] p-4"><div className="flex items-center justify-between gap-4 text-sm"><span className="text-[#6B6862]">قيمة الرصيد المتاح</span><strong className="text-[#252525]">{formatCurrency(summary.availableCreditEgp)}</strong></div><div className="mt-2 text-xs leading-6 text-[#8A857D]">{summary.rules?.pointsPerRedemptionEgp} نقاط = 1 جنيه خصم. الحد الأدنى للاستخدام {minimumRedemption} نقطة.</div></div>
+        {canRedeem ? <>
+            <label className="mt-5 block"><span className="mb-2 block text-sm font-bold text-[#56524D]">عدد النقاط المستخدمة</span><input type="range" min="0" max={maxPoints} step={redemptionStep} value={points} onChange={e=>setPoints(Number(e.target.value))} className="w-full accent-[#1F4E5F]"/></label>
+            <div className="mt-3 flex flex-wrap items-center justify-between gap-3"><div className="text-sm text-[#6B6862]">ستستخدم <strong className="text-[#252525]">{points} نقطة</strong></div><div className="text-sm font-black text-[#3F7D58]">خصم {formatCurrency(discount)}</div></div>
+            <div className="mt-3 flex gap-2"><button type="button" onClick={()=>setPoints(0)} className="rounded-lg border border-[#D9D0C4] px-3 py-2 text-xs font-bold">بدون نقاط</button><button type="button" onClick={()=>setPoints(maxPoints)} className="rounded-lg bg-[#1F4E5F] px-3 py-2 text-xs font-bold text-white">استخدام أقصى رصيد</button></div>
+        </> : <p className="mt-4 text-xs leading-6 text-[#8A857D]">تحتاج إلى {minimumRedemption} نقطة على الأقل، وبما يتناسب مع قيمة الطلب، حتى تتمكن من استخدام النقاط.</p>}
+    </section>;
+}
+
+
 function PaymentSection({
     paymentMethod,
     setPaymentMethod,
@@ -1207,6 +1289,9 @@ function CheckoutSummary({
     subtotal,
     submitting,
     paymentMethod,
+    loyaltyPoints,
+    loyaltyDiscount,
+    checkoutTotal,
 }) {
 
     return (
@@ -1283,6 +1368,14 @@ function CheckoutSummary({
                 />
 
 
+                {loyaltyPoints > 0 && (
+                    <SummaryRow
+                        label={`خصم النقاط (${loyaltyPoints} نقطة)`}
+                        value={`- ${formatCurrency(loyaltyDiscount)}`}
+                    />
+                )}
+
+
                 <SummaryRow
                     label="طريقة الدفع"
                     value={
@@ -1337,7 +1430,7 @@ function CheckoutSummary({
                         >
                             {
                                 formatCurrency(
-                                    subtotal
+                                    checkoutTotal
                                 )
                             }
                         </span>

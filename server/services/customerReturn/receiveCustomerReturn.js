@@ -12,6 +12,9 @@ const CustomerReturn =
 const inventoryService =
     require("../inventory");
 
+const loyaltyService =
+    require("../loyalty");
+
 const CUSTOMER_RETURN_STATUS =
     require(
         "../../constants/customerReturnStatus"
@@ -229,6 +232,21 @@ const receiveCustomerReturn =
             customerReturn.receivedBy =
                 user?._id ||
                 null;
+
+
+            await loyaltyService
+                .handleCustomerReturnReceived({
+
+                    order,
+
+                    customerReturn,
+
+                    performedBy:
+                        user,
+
+                    session,
+
+                });
 
 
             await order.save({

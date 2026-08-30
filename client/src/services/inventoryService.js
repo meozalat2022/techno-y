@@ -48,11 +48,33 @@ const adjustStock = async ({
 };
 
 
+const setOnlineSafetyStock =
+    async ({
+        productId,
+        onlineSafetyStock,
+    }) => {
+
+        const response =
+            await api.put(
+                `/inventory/product/${productId}/safety-stock`,
+                {
+                    onlineSafetyStock,
+                }
+            );
+
+
+        return response.data;
+
+    };
+
+
 const inventoryService = {
 
     getInventoryHistory,
 
     adjustStock,
+
+    setOnlineSafetyStock,
 
 };
 

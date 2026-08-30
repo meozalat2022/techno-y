@@ -150,6 +150,12 @@ const storeSaleRoutes =
     );
 
 
+const loyaltyRoutes =
+    require(
+        "./routes/loyaltyRoutes"
+    );
+
+
 app.use(
     cors({
 
@@ -264,6 +270,12 @@ app.use(
 app.use(
     "/api/store-sales",
     storeSaleRoutes
+);
+
+
+app.use(
+    "/api/loyalty",
+    loyaltyRoutes
 );
 
 

@@ -10,6 +10,9 @@ import {
     useState,
 } from "react";
 
+import getOnlineAvailableQuantity from
+    "@/utils/getOnlineAvailableQuantity";
+
 
 const STORAGE_KEY =
     "technoy-cart-v1";
@@ -122,9 +125,16 @@ export function CartProvider({
                 quantity = 1
             ) => {
 
+                const onlineAvailableQuantity =
+                    getOnlineAvailableQuantity(
+                        product
+                    );
+
+
                 if (
                     !product ||
-                    product.stockQuantity <= 0
+                    onlineAvailableQuantity <=
+                    0
                 ) {
 
                     return {
@@ -168,7 +178,7 @@ export function CartProvider({
                                 Math.min(
                                     existing.quantity +
                                         requestedQuantity,
-                                    product.stockQuantity
+                                    onlineAvailableQuantity
                                 );
 
 
@@ -201,6 +211,12 @@ export function CartProvider({
 
                                             stockQuantity:
                                                 product.stockQuantity,
+
+                                            onlineSafetyStock:
+                                                product.onlineSafetyStock ??
+                                                0,
+
+                                            onlineAvailableQuantity,
 
                                             regularPrice:
                                                 product.regularPrice,
@@ -272,10 +288,16 @@ export function CartProvider({
                                 stockQuantity:
                                     product.stockQuantity,
 
+                                onlineSafetyStock:
+                                    product.onlineSafetyStock ??
+                                    0,
+
+                                onlineAvailableQuantity,
+
                                 quantity:
                                     Math.min(
                                         requestedQuantity,
-                                        product.stockQuantity
+                                        onlineAvailableQuantity
                                     ),
                             },
                         ];
@@ -323,7 +345,9 @@ export function CartProvider({
                                         Math.min(
                                             parsedQuantity ||
                                                 1,
-                                            item.stockQuantity
+                                            getOnlineAvailableQuantity(
+                                                item
+                                            )
                                         )
                                     );
 
@@ -332,6 +356,107 @@ export function CartProvider({
                                     ...item,
                                     quantity:
                                         safeQuantity,
+                                };
+
+                            }
+                        )
+                );
+
+            },
+            []
+        );
+
+
+    const syncProductAvailability =
+        useCallback(
+            products => {
+
+                const productMap =
+                    new Map(
+                        (
+                            products ||
+                            []
+                        ).map(
+                            product => [
+                                product._id,
+                                product,
+                            ]
+                        )
+                    );
+
+
+                setItems(
+                    previous =>
+                        previous.map(
+                            item => {
+
+                                const product =
+                                    productMap.get(
+                                        item.productId
+                                    );
+
+
+                                if (!product) {
+                                    return item;
+                                }
+
+
+                                const onlineAvailableQuantity =
+                                    getOnlineAvailableQuantity(
+                                        product
+                                    );
+
+
+                                return {
+                                    ...item,
+
+                                    stockQuantity:
+                                        product.stockQuantity,
+
+                                    onlineSafetyStock:
+                                        product.onlineSafetyStock ??
+                                        0,
+
+                                    onlineAvailableQuantity,
+
+                                    quantity:
+                                        onlineAvailableQuantity >
+                                            0
+                                            ? Math.min(
+                                                item.quantity,
+                                                onlineAvailableQuantity
+                                            )
+                                            : item.quantity,
+
+                                    regularPrice:
+                                        product.regularPrice,
+
+                                    salePrice:
+                                        product.salePrice,
+
+                                    title:
+                                        product.title,
+
+                                    slug:
+                                        product.slug,
+
+                                    sku:
+                                        product.sku,
+
+                                    image:
+                                        product.images?.[0] ||
+                                        item.image ||
+                                        null,
+
+                                    brand:
+                                        product.brand?.name ||
+                                        item.brand ||
+                                        "",
+
+                                    category:
+                                        product.category?.name ||
+                                        item.category ||
+                                        "",
                                 };
 
                             }
@@ -452,6 +577,8 @@ export function CartProvider({
 
                 updateQuantity,
 
+                syncProductAvailability,
+
                 removeItem,
 
                 clearCart,
@@ -464,6 +591,7 @@ export function CartProvider({
                 subtotal,
                 addItem,
                 updateQuantity,
+                syncProductAvailability,
                 removeItem,
                 clearCart,
             ]
