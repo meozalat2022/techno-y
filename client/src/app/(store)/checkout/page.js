@@ -21,6 +21,7 @@ import {
     PackageCheck,
     ShieldCheck,
     ShoppingBag,
+    Ticket,
     Truck,
 } from "lucide-react";
 
@@ -40,6 +41,9 @@ import orderService from
 
 import loyaltyService from
     "@/services/loyaltyService";
+
+import promotionService from
+    "@/services/promotionService";
 
 import getApiErrorMessage from
     "@/utils/getApiErrorMessage";
@@ -151,6 +155,10 @@ export default function CheckoutPage() {
     const [loyaltySummary, setLoyaltySummary] = useState(null);
     const [loyaltyLoading, setLoyaltyLoading] = useState(false);
     const [loyaltyPointsToRedeem, setLoyaltyPointsToRedeem] = useState(0);
+    const [promoCode, setPromoCode] = useState("");
+    const [appliedPromo, setAppliedPromo] = useState(null);
+    const [promoLoading, setPromoLoading] = useState(false);
+    const [promoError, setPromoError] = useState("");
 
 
     useEffect(
@@ -235,16 +243,67 @@ export default function CheckoutPage() {
         };
 
 
+    const promoDiscount = Number(appliedPromo?.discount || 0);
+    const subtotalAfterPromo = Math.max(Number(subtotal) - promoDiscount, 0);
+
     const loyaltyRules = loyaltySummary?.rules;
     const spendablePoints = Math.max(Number(loyaltySummary?.spendablePoints || 0), 0);
     const pointsPerEgp = Number(loyaltyRules?.pointsPerRedemptionEgp || 10);
     const redemptionStep = Number(loyaltyRules?.redemptionStepPoints || 10);
     const minimumRedemption = Number(loyaltyRules?.minimumRedemptionPoints || 100);
-    const maxPointsByOrder = Math.max(Math.floor((Math.max(Number(subtotal)-1,0)*pointsPerEgp)/redemptionStep)*redemptionStep,0);
+    const maxPointsByOrder = Math.max(Math.floor((Math.max(Number(subtotalAfterPromo)-1,0)*pointsPerEgp)/redemptionStep)*redemptionStep,0);
     const maxRedeemablePoints = Math.min(spendablePoints, maxPointsByOrder);
     const safeRedeemedPoints = Math.min(Math.max(Number(loyaltyPointsToRedeem)||0,0), maxRedeemablePoints);
     const loyaltyDiscount = safeRedeemedPoints / pointsPerEgp;
-    const checkoutTotal = Math.max(Number(subtotal)-loyaltyDiscount,0);
+    const checkoutTotal = Math.max(Number(subtotalAfterPromo)-loyaltyDiscount,0);
+
+
+    const applyPromoCode = async () => {
+
+        const code = promoCode.trim().toUpperCase();
+
+        if (!code) {
+            setPromoError("من فضلك أدخل كود الخصم.");
+            return;
+        }
+
+        setPromoLoading(true);
+        setPromoError("");
+
+        try {
+            const response = await promotionService.validatePromoCode({
+                code,
+                subtotal,
+            });
+
+            setAppliedPromo(response.data);
+            setPromoCode(response.data?.code || code);
+            setLoyaltyPointsToRedeem(0);
+        } catch (error) {
+            setAppliedPromo(null);
+            setPromoError(
+                error.response?.data?.message ||
+                "تعذر تطبيق كود الخصم."
+            );
+        } finally {
+            setPromoLoading(false);
+        }
+    };
+
+
+    const removePromoCode = () => {
+        setPromoCode("");
+        setAppliedPromo(null);
+        setPromoError("");
+        setLoyaltyPointsToRedeem(0);
+    };
+
+
+    const handlePromoInput = value => {
+        setPromoCode(value.toUpperCase());
+        setAppliedPromo(null);
+        setPromoError("");
+    };
 
 
     const handleSubmit =
@@ -368,6 +427,10 @@ export default function CheckoutPage() {
 
                             loyaltyPointsToRedeem:
                                 safeRedeemedPoints,
+
+                            promoCode:
+                                appliedPromo?.code ||
+                                "",
 
                         });
 
@@ -637,6 +700,17 @@ export default function CheckoutPage() {
                         />
 
 
+                        <PromoSection
+                            code={promoCode}
+                            setCode={handlePromoInput}
+                            appliedPromo={appliedPromo}
+                            loading={promoLoading}
+                            error={promoError}
+                            onApply={applyPromoCode}
+                            onRemove={removePromoCode}
+                        />
+
+
                         <LoyaltySection
                             summary={loyaltySummary}
                             loading={loyaltyLoading}
@@ -675,6 +749,8 @@ export default function CheckoutPage() {
                         paymentMethod={
                             paymentMethod
                         }
+                        promoCode={appliedPromo?.code || ""}
+                        promoDiscount={promoDiscount}
                         loyaltyPoints={safeRedeemedPoints}
                         loyaltyDiscount={loyaltyDiscount}
                         checkoutTotal={checkoutTotal}
@@ -1042,6 +1118,115 @@ function ShippingAddressSection({
 }
 
 
+function PromoSection({
+    code,
+    setCode,
+    appliedPromo,
+    loading,
+    error,
+    onApply,
+    onRemove,
+}) {
+
+    return (
+        <section
+            className="
+                rounded-2xl
+                border
+                border-[#E7E0D5]
+                bg-[#FFFEFC]
+                p-5
+                sm:p-6
+            "
+        >
+            <div className="flex items-center gap-3">
+                <div
+                    className="
+                        flex
+                        h-10
+                        w-10
+                        items-center
+                        justify-center
+                        rounded-xl
+                        bg-[#F5B82E]/20
+                        text-[#8A6400]
+                    "
+                >
+                    <Ticket size={19} />
+                </div>
+
+                <div>
+                    <h2 className="font-black text-[#252525]">
+                        كود الخصم
+                    </h2>
+                    <p className="mt-1 text-xs text-[#6B6862]">
+                        إذا كان لديك كود خصم، أدخله هنا قبل تأكيد الطلب.
+                    </p>
+                </div>
+            </div>
+
+            {appliedPromo ? (
+                <div className="mt-5 rounded-xl border border-emerald-200 bg-emerald-50 p-4">
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                            <div className="text-sm font-black text-emerald-800">
+                                تم تطبيق الكود {" "}
+                                <span dir="ltr" className="font-mono">
+                                    {appliedPromo.code}
+                                </span>
+                            </div>
+                            <div className="mt-1 text-xs text-emerald-700">
+                                خصم {appliedPromo.discountPercent}% — {formatCurrency(appliedPromo.discount)} خصم على هذا الطلب.
+                            </div>
+                        </div>
+
+                        <button
+                            type="button"
+                            onClick={onRemove}
+                            className="rounded-lg border border-emerald-200 bg-white px-3 py-2 text-xs font-bold text-emerald-800"
+                        >
+                            إزالة الكود
+                        </button>
+                    </div>
+                </div>
+            ) : (
+                <div className="mt-5 flex flex-col gap-3 sm:flex-row">
+                    <input
+                        value={code}
+                        onChange={event => setCode(event.target.value)}
+                        onKeyDown={event => {
+                            if (event.key === "Enter") {
+                                event.preventDefault();
+                                onApply();
+                            }
+                        }}
+                        placeholder="مثال: WELCOME10"
+                        maxLength={50}
+                        dir="ltr"
+                        className="min-w-0 flex-1 rounded-xl border border-[#D9D0C4] px-4 py-3 text-left font-semibold uppercase outline-none focus:border-[#1F4E5F]"
+                    />
+
+                    <button
+                        type="button"
+                        onClick={onApply}
+                        disabled={loading}
+                        className="rounded-xl bg-[#1F4E5F] px-6 py-3 text-sm font-black text-white disabled:opacity-50"
+                    >
+                        {loading ? "جاري التحقق..." : "تطبيق"}
+                    </button>
+                </div>
+            )}
+
+            {error && (
+                <div className="mt-3 text-sm font-semibold text-[#C94A45]">
+                    {error}
+                </div>
+            )}
+        </section>
+    );
+}
+
+
 function LoyaltySection({ summary, loading, points, setPoints, maxPoints, minimumRedemption, redemptionStep, pointsPerEgp }) {
     const spendable = Math.max(Number(summary?.spendablePoints || 0), 0);
     if (loading) return <section className="rounded-2xl border border-[#E7E0D5] bg-[#FFFEFC] p-5 sm:p-6"><div className="text-sm text-[#6B6862]">جاري تحميل نقاط الولاء...</div></section>;
@@ -1289,6 +1474,8 @@ function CheckoutSummary({
     subtotal,
     submitting,
     paymentMethod,
+    promoCode,
+    promoDiscount,
     loyaltyPoints,
     loyaltyDiscount,
     checkoutTotal,
@@ -1366,6 +1553,14 @@ function CheckoutSummary({
                         )
                     }
                 />
+
+
+                {promoCode && promoDiscount > 0 && (
+                    <SummaryRow
+                        label={`كود الخصم (${promoCode})`}
+                        value={`- ${formatCurrency(promoDiscount)}`}
+                    />
+                )}
 
 
                 {loyaltyPoints > 0 && (

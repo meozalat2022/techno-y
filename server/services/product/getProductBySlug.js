@@ -1,44 +1,63 @@
 const Product =
     require("../../models/Product");
 
+
 const MESSAGES =
     require("../../constants/messages");
 
 
-const getProductBySlug = async (
-    slug
-) => {
+const applyBundleAvailability =
+    require("./applyBundleAvailability");
 
-    const product =
-        await Product.findOne({
 
-            slug,
+const getProductBySlug =
+    async slug => {
 
-            isActive: true,
+        const product =
+            await Product.findOne({
 
-        })
-            .populate(
-                "category",
-                "name"
-            )
-            .populate(
-                "brand",
-                "name"
+                slug,
+
+                isActive: true,
+
+            })
+
+                .populate(
+                    "category",
+                    "name"
+                )
+
+                .populate(
+                    "brand",
+                    "name"
+                );
+
+
+        if (!product) {
+
+            throw new Error(
+                MESSAGES.PRODUCT.NOT_FOUND
             );
 
+        }
 
-    if (!product) {
 
-        throw new Error(
-            MESSAGES.PRODUCT.NOT_FOUND
+        /*
+         * If this is a Bundle, calculate its
+         * available quantity from its components.
+         *
+         * Normal products are left completely
+         * unchanged.
+         */
+        await applyBundleAvailability(
+            product
         );
 
-    }
+
+        return product;
+
+    };
 
 
-    return product;
-
-};
-
-
-module.exports = getProductBySlug;
+module.exports =
+    getProductBySlug;

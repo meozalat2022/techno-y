@@ -35,7 +35,7 @@ import ProductCard from
     "@/components/store/ProductCard";
 
 
-const PRODUCTS_PER_PAGE = 12;
+const PRODUCTS_PER_PAGE = 24;
 
 
 export default function ProductCatalog() {

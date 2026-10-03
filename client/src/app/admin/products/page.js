@@ -32,6 +32,9 @@ import ar from
 
 import uploadService from
     "@/services/uploadService";
+
+
+const PRODUCTS_PER_PAGE = 24;
 const formatCurrency =
     value => {
 
@@ -80,7 +83,7 @@ export default function ProductsPage() {
 
             page: 1,
 
-            limit: 12,
+            limit: PRODUCTS_PER_PAGE,
 
             total: 0,
 
@@ -174,7 +177,7 @@ export default function ProductsPage() {
 
                                 ...filters,
 
-                                limit: 12,
+                                limit: PRODUCTS_PER_PAGE,
 
                             });
 
@@ -189,7 +192,7 @@ export default function ProductsPage() {
                         response.pagination ||
                         {
                             page: 1,
-                            limit: 12,
+                            limit: PRODUCTS_PER_PAGE,
                             total: 0,
                             pages: 1,
                         }

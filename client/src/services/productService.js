@@ -3,7 +3,7 @@ import api from "@/lib/api";
 
 const getProducts = async ({
     page = 1,
-    limit = 12,
+    limit = 24,
     search = "",
     category = "",
     brand = "",

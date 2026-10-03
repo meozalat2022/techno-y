@@ -25,6 +25,9 @@ const updateInventory =
 const loyaltyService =
     require("../loyalty");
 
+const promotionService =
+    require("../promotion");
+
 
 const createOrder = async ({
     customer,
@@ -32,6 +35,7 @@ const createOrder = async ({
     shippingAddress,
     payment,
     loyaltyPointsToRedeem = 0,
+    promoCode = "",
     user,
 }) => {
 
@@ -77,10 +81,44 @@ const createOrder = async ({
             );
 
 
+        let promotionResult = {
+            promotion: null,
+            discount: 0,
+            preview: null,
+        };
+
+
+        if (String(promoCode || "").trim()) {
+
+            promotionResult =
+                await promotionService
+                    .validateForCheckout({
+                        code: promoCode,
+                        subtotal: baseTotals.subtotal,
+                        session,
+                    });
+
+            promotionResult.discount =
+                promotionResult.preview.discount;
+
+        }
+
+
+        const subtotalAfterPromotion =
+            Math.max(
+                baseTotals.subtotal -
+                    Number(
+                        promotionResult.discount ||
+                        0
+                    ),
+                0
+            );
+
+
         /*
-         * Loyalty reservation and pending earning
-         * happen in the same MongoDB transaction as
-         * order creation + inventory reservation.
+         * Loyalty is calculated after the promotion discount.
+         * Both reservations happen inside the same transaction
+         * as order creation + inventory reservation.
          */
         const loyaltyResult =
             await loyaltyService
@@ -92,8 +130,7 @@ const createOrder = async ({
                     orderNumber,
 
                     subtotal:
-                        baseTotals
-                            .subtotal,
+                        subtotalAfterPromotion,
 
                     requestedPoints:
                         loyaltyPointsToRedeem,
@@ -103,14 +140,24 @@ const createOrder = async ({
                 });
 
 
+        const combinedDiscount =
+            Number(
+                promotionResult.discount ||
+                0
+            ) +
+            Number(
+                loyaltyResult.discount ||
+                0
+            );
+
+
         const totals =
             calculateTotals({
 
                 orderItems,
 
                 discount:
-                    loyaltyResult
-                        .discount,
+                    combinedDiscount,
 
             });
 
@@ -133,6 +180,23 @@ const createOrder = async ({
                 loyalty:
                     loyaltyResult
                         .loyalty,
+
+                promotion:
+                    promotionResult.promotion
+                        ? {
+                            code:
+                                promotionResult
+                                    .promotion
+                                    .code,
+                            discountPercent:
+                                promotionResult
+                                    .promotion
+                                    .discountPercent,
+                            discountAmount:
+                                promotionResult
+                                    .discount,
+                        }
+                        : undefined,
 
                 user,
 

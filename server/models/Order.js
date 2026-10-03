@@ -1,473 +1,1172 @@
-const mongoose = require("mongoose");
-// const Counter = require("./Counter");
-// const ORDER_STATUS = require("../constants/orderStatus");
+const mongoose =
+    require("mongoose");
+
+
 const ORDER_STATUS =
-  require("../constants/orderStatus");
-  const PAYMENT_METHODS = require("../constants/paymentMethods");
-  const PAYMENT_STATUS = require("../constants/paymentStatus");
-
-const orderItemSchema = new mongoose.Schema(
-  {
-    product: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Product",
-      required: true,
-    },
-
-    title: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    sku: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-
-    image: {
-      url: {
-        type: String,
-        default: "",
-      },
-      publicId: {
-        type: String,
-        default: "",
-      },
-    },
+    require("../constants/orderStatus");
 
 
-    brand: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+const PAYMENT_METHODS =
+    require("../constants/paymentMethods");
 
-    category: {
-      type: String,
-      required: true,
-      trim: true,
-    },
 
-    compatibleModels: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
-
-    pricing: {
-      regularPrice: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-
-      salePrice: {
-        type: Number,
-        default: 0,
-        min: 0,
-      },
-
-      finalPrice: {
-        type: Number,
-        required: true,
-        min: 0,
-      },
-    },
+const PAYMENT_STATUS =
+    require("../constants/paymentStatus");
 
 
 
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
-    returnedQuantity: {
-    type: Number,
-    default: 0,
-    min: 0,
-},
-    inventory: {
+/*
+ * Bundle component snapshot.
+ *
+ * This records exactly which products made up the Bundle
+ * at the moment the order was created.
+ */
+const bundleComponentSchema =
+    new mongoose.Schema(
+        {
 
-      stockBefore: {
-        type: Number,
-        default: 0,
-      },
+            product: {
 
-      stockAfter: {
-        type: Number,
-        default: 0,
-      },
+                type:
+                    mongoose.Schema.Types.ObjectId,
 
-    },
-  },
-  {
-    _id: false,
-  }
-);
+                ref:
+                    "Product",
 
-const customerSchema = new mongoose.Schema(
-  {
-    user: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
-      default: null,
-    },
+                required:
+                    true,
 
-    firstName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+            },
 
-    lastName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+            quantity: {
 
-    email: {
-      type: String,
-      required: true,
-      lowercase: true,
-      trim: true,
-    },
+                type:
+                    Number,
 
-    phone: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-  },
-  {
-    _id: false,
-  }
-);
-const shippingAddressSchema = new mongoose.Schema(
-  {
-    governorate: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+                required:
+                    true,
 
-    city: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+                min:
+                    1,
 
-    address: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+            },
 
-    landmark: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-  },
-  {
-    _id: false,
-  }
-);
+        },
+        {
+            _id: false,
+        }
+    );
 
 
 
+const orderItemSchema =
+    new mongoose.Schema(
+        {
+
+            product: {
+
+                type:
+                    mongoose.Schema.Types.ObjectId,
+
+                ref:
+                    "Product",
+
+                required:
+                    true,
+
+            },
 
 
-//Payment Schema
-const paymentSchema = new mongoose.Schema(
-  {
-    method: {
-      type: String,
-      enum: Object.values(PAYMENT_METHODS),
-      default: PAYMENT_METHODS.COD,
-    },
+            title: {
 
-    status: {
-      type: String,
-      enum: Object.values(PAYMENT_STATUS),
-      default: PAYMENT_STATUS.PENDING,
-    },
+                type:
+                    String,
 
-    provider: {
-      type: String,
-      default: "",
-      trim: true,
-    },
+                required:
+                    true,
 
-    reference: {
-      type: String,
-      default: "",
-      trim: true,
-    },
+                trim:
+                    true,
 
-    providerOrderNo: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    transactionId: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    cashierUrl: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    providerStatus: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    failureCode: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    failureReason: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    paidAt: {
-      type: Date,
-      default: null,
-    },
-
-    inventoryRestored: {
-      type: Boolean,
-      default: false,
-    },
-  },
-  {
-    _id: false,
-  }
-);
-
-//Shipping Schema
-
-const shippingSchema = new mongoose.Schema(
-  {
-    company: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-
-    method: {
-      type: String,
-      default: "Standard",
-      trim: true,
-    },
-
-    cost: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
-
-    trackingNumber: {
-      type: String,
-      default: "",
-      trim: true,
-    },
-  },
-  {
-    _id: false,
-  }
-);
-
-//total Schema
+            },
 
 
-const totalsSchema = new mongoose.Schema(
-  {
-    subtotal: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
+            sku: {
 
-    discount: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
+                type:
+                    String,
 
-    shipping: {
-      type: Number,
-      default: 0,
-      min: 0,
-    },
+                required:
+                    true,
 
-    total: {
-      type: Number,
-      required: true,
-      min: 0,
-    },
-  },
-  {
-    _id: false,
-  }
-);
+                trim:
+                    true,
 
-// Loyalty Schema
+            },
+
+
+            image: {
+
+                url: {
+
+                    type:
+                        String,
+
+                    default:
+                        "",
+
+                },
+
+                publicId: {
+
+                    type:
+                        String,
+
+                    default:
+                        "",
+
+                },
+
+            },
+
+
+            brand: {
+
+                type:
+                    String,
+
+                required:
+                    true,
+
+                trim:
+                    true,
+
+            },
+
+
+            category: {
+
+                type:
+                    String,
+
+                required:
+                    true,
+
+                trim:
+                    true,
+
+            },
+
+
+            compatibleModels: [
+
+                {
+
+                    type:
+                        String,
+
+                    trim:
+                        true,
+
+                },
+
+            ],
+
+
+            /*
+             * Identifies whether this order line
+             * represents a Bundle.
+             */
+            isBundle: {
+
+                type:
+                    Boolean,
+
+                default:
+                    false,
+
+            },
+
+
+            /*
+             * Historical snapshot of the Bundle
+             * components at the time of purchase.
+             *
+             * This must NOT be rebuilt from the current
+             * Product.bundleItems during a return because
+             * the Bundle definition may have changed since
+             * the original order.
+             */
+            bundleComponents: {
+
+                type:
+                    [bundleComponentSchema],
+
+                default:
+                    [],
+
+            },
+
+
+            pricing: {
+
+                regularPrice: {
+
+                    type:
+                        Number,
+
+                    required:
+                        true,
+
+                    min:
+                        0,
+
+                },
+
+
+                salePrice: {
+
+                    type:
+                        Number,
+
+                    default:
+                        0,
+
+                    min:
+                        0,
+
+                },
+
+
+                finalPrice: {
+
+                    type:
+                        Number,
+
+                    required:
+                        true,
+
+                    min:
+                        0,
+
+                },
+
+            },
+
+
+            quantity: {
+
+                type:
+                    Number,
+
+                required:
+                    true,
+
+                min:
+                    1,
+
+            },
+
+
+            returnedQuantity: {
+
+                type:
+                    Number,
+
+                default:
+                    0,
+
+                min:
+                    0,
+
+            },
+
+
+            inventory: {
+
+                stockBefore: {
+
+                    type:
+                        Number,
+
+                    default:
+                        0,
+
+                },
+
+
+                stockAfter: {
+
+                    type:
+                        Number,
+
+                    default:
+                        0,
+
+                },
+
+            },
+
+        },
+
+        {
+            _id:
+                false,
+        }
+    );
+
+
+
+const customerSchema =
+    new mongoose.Schema(
+        {
+
+            user: {
+
+                type:
+                    mongoose.Schema.Types.ObjectId,
+
+                ref:
+                    "User",
+
+                default:
+                    null,
+
+            },
+
+
+            firstName: {
+
+                type:
+                    String,
+
+                required:
+                    true,
+
+                trim:
+                    true,
+
+            },
+
+
+            lastName: {
+
+                type:
+                    String,
+
+                required:
+                    true,
+
+                trim:
+                    true,
+
+            },
+
+
+            email: {
+
+                type:
+                    String,
+
+                required:
+                    true,
+
+                lowercase:
+                    true,
+
+                trim:
+                    true,
+
+            },
+
+
+            phone: {
+
+                type:
+                    String,
+
+                required:
+                    true,
+
+                trim:
+                    true,
+
+            },
+
+        },
+
+        {
+            _id:
+                false,
+        }
+    );
+
+
+
+const shippingAddressSchema =
+    new mongoose.Schema(
+        {
+
+            governorate: {
+
+                type:
+                    String,
+
+                required:
+                    true,
+
+                trim:
+                    true,
+
+            },
+
+
+            city: {
+
+                type:
+                    String,
+
+                required:
+                    true,
+
+                trim:
+                    true,
+
+            },
+
+
+            address: {
+
+                type:
+                    String,
+
+                required:
+                    true,
+
+                trim:
+                    true,
+
+            },
+
+
+            landmark: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+            },
+
+        },
+
+        {
+            _id:
+                false,
+        }
+    );
+
+
+
+const paymentSchema =
+    new mongoose.Schema(
+        {
+
+            method: {
+
+                type:
+                    String,
+
+                enum:
+                    Object.values(
+                        PAYMENT_METHODS
+                    ),
+
+                default:
+                    PAYMENT_METHODS.COD,
+
+            },
+
+
+            status: {
+
+                type:
+                    String,
+
+                enum:
+                    Object.values(
+                        PAYMENT_STATUS
+                    ),
+
+                default:
+                    PAYMENT_STATUS.PENDING,
+
+            },
+
+
+            provider: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+            },
+
+
+            reference: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+            },
+
+
+            providerOrderNo: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+            },
+
+
+            transactionId: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+            },
+
+
+            cashierUrl: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+            },
+
+
+            providerStatus: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+            },
+
+
+            failureCode: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+            },
+
+
+            failureReason: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+            },
+
+
+            paidAt: {
+
+                type:
+                    Date,
+
+                default:
+                    null,
+
+            },
+
+
+            inventoryRestored: {
+
+                type:
+                    Boolean,
+
+                default:
+                    false,
+
+            },
+
+        },
+
+        {
+            _id:
+                false,
+        }
+    );
+
+
+
+const shippingSchema =
+    new mongoose.Schema(
+        {
+
+            company: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+            },
+
+
+            method: {
+
+                type:
+                    String,
+
+                default:
+                    "Standard",
+
+                trim:
+                    true,
+
+            },
+
+
+            cost: {
+
+                type:
+                    Number,
+
+                default:
+                    0,
+
+                min:
+                    0,
+
+            },
+
+
+            trackingNumber: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+            },
+
+        },
+
+        {
+            _id:
+                false,
+        }
+    );
+
+
+
+const totalsSchema =
+    new mongoose.Schema(
+        {
+
+            subtotal: {
+
+                type:
+                    Number,
+
+                required:
+                    true,
+
+                min:
+                    0,
+
+            },
+
+
+            discount: {
+
+                type:
+                    Number,
+
+                default:
+                    0,
+
+                min:
+                    0,
+
+            },
+
+
+            shipping: {
+
+                type:
+                    Number,
+
+                default:
+                    0,
+
+                min:
+                    0,
+
+            },
+
+
+            total: {
+
+                type:
+                    Number,
+
+                required:
+                    true,
+
+                min:
+                    0,
+
+            },
+
+        },
+
+        {
+            _id:
+                false,
+        }
+    );
+
+
 
 const loyaltySchema =
-  new mongoose.Schema(
-    {
-      pointsRedeemed: {
-        type: Number,
-        default: 0,
-        min: 0,
-      },
+    new mongoose.Schema(
+        {
 
-      redemptionAmount: {
-        type: Number,
-        default: 0,
-        min: 0,
-      },
+            pointsRedeemed: {
 
-      pointsPending: {
-        type: Number,
-        default: 0,
-        min: 0,
-      },
+                type:
+                    Number,
 
-      pointsAwarded: {
-        type: Number,
-        default: 0,
-        min: 0,
-      },
+                default:
+                    0,
 
-      pointsReversed: {
-        type: Number,
-        default: 0,
-        min: 0,
-      },
+                min:
+                    0,
 
-      redeemedPointsRestored: {
-        type: Number,
-        default: 0,
-        min: 0,
-      },
-
-      pendingCancelled: {
-        type: Boolean,
-        default: false,
-      },
-
-      redemptionRestoredOnCancellation: {
-        type: Boolean,
-        default: false,
-      },
-
-      awardedAt: {
-        type: Date,
-        default: null,
-      },
-    },
-    {
-      _id: false,
-    }
-  );
+            },
 
 
-// order Schema
+            redemptionAmount: {
+
+                type:
+                    Number,
+
+                default:
+                    0,
+
+                min:
+                    0,
+
+            },
 
 
-const orderSchema = new mongoose.Schema(
-  {
-    orderNumber: {
-      type: String,
-      required: true,
-      unique: true,
-      trim: true,
-    },
+            pointsPending: {
 
-    customer: {
-      type: customerSchema,
-      required: true,
-    },
+                type:
+                    Number,
 
-    items: {
-      type: [orderItemSchema],
-      required: true,
-      validate: [
-        (items) => items.length > 0,
-        "Order must contain at least one item.",
-      ],
-    },
+                default:
+                    0,
 
-    shippingAddress: {
-      type: shippingAddressSchema,
-      required: true,
-    },
+                min:
+                    0,
 
-    payment: {
-      type: paymentSchema,
-      required: true,
-    },
+            },
 
-    shipping: {
-      type: shippingSchema,
-      required: true,
-    },
 
-    totals: {
-      type: totalsSchema,
-      required: true,
-    },
+            pointsAwarded: {
 
-    loyalty: {
-      type: loyaltySchema,
-      default: () => ({}),
-    },
+                type:
+                    Number,
 
-    status: {
-      type: String,
-      enum: Object.values(ORDER_STATUS),
+                default:
+                    0,
 
-      default: ORDER_STATUS.PENDING
-    },
+                min:
+                    0,
 
-    notes: {
-      customer: {
-        type: String,
-        default: "",
-      },
+            },
 
-      admin: {
-        type: String,
-        default: "",
-      },
-    },
-  },
-  {
-    timestamps: true,
-  }
-);
 
-// orderSchema.index({ orderNumber: 1 });
+            pointsReversed: {
 
-orderSchema.index({ status: 1 });
+                type:
+                    Number,
 
-orderSchema.index({ createdAt: -1 });
+                default:
+                    0,
 
-orderSchema.index({ "customer.email": 1 });
+                min:
+                    0,
 
-module.exports = mongoose.model("Order", orderSchema);
+            },
+
+
+            redeemedPointsRestored: {
+
+                type:
+                    Number,
+
+                default:
+                    0,
+
+                min:
+                    0,
+
+            },
+
+
+            pendingCancelled: {
+
+                type:
+                    Boolean,
+
+                default:
+                    false,
+
+            },
+
+
+            redemptionRestoredOnCancellation: {
+
+                type:
+                    Boolean,
+
+                default:
+                    false,
+
+            },
+
+
+            awardedAt: {
+
+                type:
+                    Date,
+
+                default:
+                    null,
+
+            },
+
+        },
+
+        {
+            _id:
+                false,
+        }
+    );
+
+
+
+const promotionSchema =
+    new mongoose.Schema(
+        {
+
+            code: {
+
+                type:
+                    String,
+
+                default:
+                    "",
+
+                trim:
+                    true,
+
+                uppercase:
+                    true,
+
+            },
+
+
+            discountPercent: {
+
+                type:
+                    Number,
+
+                default:
+                    0,
+
+                min:
+                    0,
+
+            },
+
+
+            discountAmount: {
+
+                type:
+                    Number,
+
+                default:
+                    0,
+
+                min:
+                    0,
+
+            },
+
+        },
+
+        {
+            _id:
+                false,
+        }
+    );
+
+
+
+const orderSchema =
+    new mongoose.Schema(
+        {
+
+            orderNumber: {
+
+                type:
+                    String,
+
+                required:
+                    true,
+
+                unique:
+                    true,
+
+                trim:
+                    true,
+
+            },
+
+
+            customer: {
+
+                type:
+                    customerSchema,
+
+                required:
+                    true,
+
+            },
+
+
+            items: {
+
+                type:
+                    [orderItemSchema],
+
+                required:
+                    true,
+
+                validate: [
+
+                    items =>
+                        items.length >
+                        0,
+
+                    "Order must contain at least one item.",
+
+                ],
+
+            },
+
+
+            shippingAddress: {
+
+                type:
+                    shippingAddressSchema,
+
+                required:
+                    true,
+
+            },
+
+
+            payment: {
+
+                type:
+                    paymentSchema,
+
+                required:
+                    true,
+
+            },
+
+
+            shipping: {
+
+                type:
+                    shippingSchema,
+
+                required:
+                    true,
+
+            },
+
+
+            totals: {
+
+                type:
+                    totalsSchema,
+
+                required:
+                    true,
+
+            },
+
+
+            loyalty: {
+
+                type:
+                    loyaltySchema,
+
+                default:
+                    () => ({}),
+
+            },
+
+
+            promotion: {
+
+                type:
+                    promotionSchema,
+
+                default:
+                    () => ({}),
+
+            },
+
+
+            status: {
+
+                type:
+                    String,
+
+                enum:
+                    Object.values(
+                        ORDER_STATUS
+                    ),
+
+                default:
+                    ORDER_STATUS.PENDING,
+
+            },
+
+
+            notes: {
+
+                customer: {
+
+                    type:
+                        String,
+
+                    default:
+                        "",
+
+                },
+
+
+                admin: {
+
+                    type:
+                        String,
+
+                    default:
+                        "",
+
+                },
+
+            },
+
+        },
+
+        {
+            timestamps:
+                true,
+        }
+    );
+
+
+
+orderSchema.index({
+    status:
+        1,
+});
+
+
+orderSchema.index({
+    createdAt:
+        -1,
+});
+
+
+orderSchema.index({
+    "customer.email":
+        1,
+});
+
+
+module.exports =
+    mongoose.model(
+        "Order",
+        orderSchema
+    );

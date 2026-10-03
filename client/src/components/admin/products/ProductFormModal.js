@@ -1,6 +1,5 @@
 "use client";
 
-
 import {
     useEffect,
     useState,
@@ -9,12 +8,16 @@ import {
 import {
     ImagePlus,
     Loader2,
+    Plus,
     Trash2,
     X,
 } from "lucide-react";
 
+import productService from
+    "@/services/productService";
+
 import uploadService from
-    "@/services/uploadService";
+    "@/services/uploadService"
 
 import ar from
     "@/locales/ar";
@@ -47,6 +50,10 @@ const emptyForm = {
     lowStockThreshold: 5,
 
     trackInventory: true,
+
+    isBundle: false,
+
+    bundleItems: [],
 
     images: [],
 
@@ -98,6 +105,87 @@ export default function ProductFormModal({
         setRemovedExistingImages,
     ] =
         useState([]);
+
+
+    const [
+        bundleProducts,
+        setBundleProducts,
+    ] =
+        useState([]);
+
+
+    const [
+        bundleProductsLoading,
+        setBundleProductsLoading,
+    ] =
+        useState(false);
+
+
+    const [
+        bundleProductsError,
+        setBundleProductsError,
+    ] =
+        useState("");
+
+
+  const loadBundleProducts =
+    async () => {
+
+        setBundleProductsLoading(
+            true
+        );
+
+        setBundleProductsError("");
+
+        try {
+
+            const response =
+                await productService.getProducts({
+                    page: 1,
+                    limit: 1000,
+                });
+
+
+            const products =
+                Array.isArray(
+                    response?.products
+                )
+                    ? response.products
+                    : Array.isArray(
+                        response?.data
+                    )
+                        ? response.data
+                        : [];
+
+
+            setBundleProducts(
+                products.filter(
+                    item =>
+                        !item.isBundle &&
+                        item._id !==
+                            product?._id
+                )
+            );
+
+
+        } catch (error) {
+
+            setBundleProductsError(
+                error?.response?.data?.message ||
+                error?.message ||
+                "تعذر تحميل المنتجات المتاحة لمكونات الباقة."
+            );
+
+
+        } finally {
+
+            setBundleProductsLoading(
+                false
+            );
+
+        }
+
+    };
 
 
     useEffect(
@@ -180,11 +268,42 @@ export default function ProductFormModal({
                             .trackInventory !==
                         false,
 
+                    isBundle:
+                        Boolean(
+                            product.isBundle
+                        ),
+
+                    bundleItems:
+                        Array.isArray(
+                            product.bundleItems
+                        )
+                            ? product.bundleItems.map(
+                                item => ({
+                                    product:
+                                        item.product?._id ||
+                                        item.product ||
+                                        "",
+                                    quantity:
+                                        Number(
+                                            item.quantity ||
+                                            1
+                                        ),
+                                })
+                            )
+                            : [],
+
                     images:
                         product.images ||
                         [],
 
                 });
+
+
+                if (product.isBundle) {
+
+                    loadBundleProducts();
+
+                }
 
             } else {
 
@@ -222,6 +341,136 @@ export default function ProductFormModal({
                         value,
 
                 })
+            );
+
+        };
+
+
+    const handleBundleToggle =
+        checked => {
+
+            updateField(
+                "isBundle",
+                checked
+            );
+
+
+            if (checked) {
+
+                loadBundleProducts();
+
+            } else {
+
+                updateField(
+                    "bundleItems",
+                    []
+                );
+
+            }
+
+        };
+
+
+    const addBundleItem =
+        () => {
+
+            const usedIds =
+                new Set(
+                    form.bundleItems.map(
+                        item =>
+                            item.product
+                    )
+                );
+
+
+            const firstAvailable =
+                bundleProducts.find(
+                    item =>
+                        !usedIds.has(
+                            item._id
+                        )
+                );
+
+
+            if (!firstAvailable) {
+
+                return;
+
+            }
+
+
+            updateField(
+                "bundleItems",
+                [
+
+                    ...form.bundleItems,
+
+                    {
+                        product:
+                            firstAvailable._id,
+
+                        quantity: 1,
+                    },
+
+                ]
+            );
+
+        };
+
+
+    const updateBundleItem =
+        (
+            index,
+            field,
+            value
+        ) => {
+
+            const nextItems =
+                form.bundleItems.map(
+                    (
+                        item,
+                        itemIndex
+                    ) =>
+                        itemIndex === index
+                            ? {
+                                ...item,
+
+                                [field]:
+                                    field ===
+                                    "quantity"
+                                        ? Math.max(
+                                            1,
+                                            Number(
+                                                value
+                                            ) || 1
+                                        )
+                                        : value,
+                            }
+                            : item
+                );
+
+
+            updateField(
+                "bundleItems",
+                nextItems
+            );
+
+        };
+
+
+    const removeBundleItem =
+        index => {
+
+            updateField(
+                "bundleItems",
+                form.bundleItems.filter(
+                    (
+                        _,
+                        itemIndex
+                    ) =>
+                        itemIndex !==
+                        index
+                )
             );
 
         };
@@ -461,6 +710,16 @@ export default function ProductFormModal({
             event.preventDefault();
 
 
+            if (
+                form.isBundle &&
+                form.bundleItems.length === 0
+            ) {
+
+                return;
+
+            }
+
+
             const payload = {
 
                 title:
@@ -525,7 +784,27 @@ export default function ProductFormModal({
                     ),
 
                 trackInventory:
-                    form.trackInventory,
+                    form.isBundle
+                        ? false
+                        : form.trackInventory,
+
+                isBundle:
+                    form.isBundle,
+
+                bundleItems:
+                    form.isBundle
+                        ? form.bundleItems.map(
+                            item => ({
+                                product:
+                                    item.product,
+
+                                quantity:
+                                    Number(
+                                        item.quantity
+                                    ),
+                            })
+                        )
+                        : [],
 
                 images:
                     form.images,
@@ -878,6 +1157,366 @@ export default function ProductFormModal({
                     </div>
 
 
+                    <div
+                        className="
+                            mt-6
+                            rounded-2xl
+                            border
+                            border-slate-200
+                            bg-slate-50
+                            p-4
+                        "
+                    >
+
+                        <CheckboxField
+                            label="منتج Bundle"
+                            checked={
+                                form.isBundle
+                            }
+                            onChange={
+                                handleBundleToggle
+                            }
+                        />
+
+
+                        {form.isBundle && (
+
+                            <div className="mt-4">
+
+                                <div
+                                    className="
+                                        flex
+                                        items-center
+                                        justify-between
+                                        gap-3
+                                    "
+                                >
+
+                                    <div>
+
+                                        <h3
+                                            className="
+                                                text-sm
+                                                font-semibold
+                                                text-slate-800
+                                            "
+                                        >
+                                            مكونات الباقة
+                                        </h3>
+
+
+                                        <p
+                                            className="
+                                                mt-1
+                                                text-xs
+                                                text-slate-500
+                                            "
+                                        >
+                                            مخزون الباقة يُحسب تلقائيًا من مخزون مكوناتها.
+                                        </p>
+
+                                    </div>
+
+
+                                    <button
+                                        type="button"
+                                        onClick={
+                                            addBundleItem
+                                        }
+                                        disabled={
+                                            bundleProductsLoading ||
+                                            bundleProducts.length ===
+                                                form.bundleItems.length
+                                        }
+                                        className="
+                                            inline-flex
+                                            items-center
+                                            gap-2
+                                            rounded-lg
+                                            border
+                                            border-slate-300
+                                            bg-white
+                                            px-3
+                                            py-2
+                                            text-sm
+                                            font-medium
+                                            text-slate-700
+                                            hover:bg-slate-100
+                                            disabled:cursor-not-allowed
+                                            disabled:opacity-50
+                                        "
+                                    >
+
+                                        <Plus
+                                            size={16}
+                                        />
+
+                                        إضافة مكون
+
+                                    </button>
+
+                                </div>
+
+
+                                {bundleProductsLoading && (
+
+                                    <div
+                                        className="
+                                            mt-4
+                                            flex
+                                            items-center
+                                            gap-2
+                                            text-sm
+                                            text-slate-500
+                                        "
+                                    >
+
+                                        <Loader2
+                                            size={16}
+                                            className="animate-spin"
+                                        />
+
+                                        جاري تحميل المنتجات...
+
+                                    </div>
+
+                                )}
+
+
+                                {bundleProductsError && (
+
+                                    <div
+                                        className="
+                                            mt-4
+                                            rounded-lg
+                                            bg-red-50
+                                            px-3
+                                            py-2
+                                            text-sm
+                                            text-red-700
+                                        "
+                                    >
+                                        {
+                                            bundleProductsError
+                                        }
+                                    </div>
+
+                                )}
+
+
+                                {!bundleProductsLoading &&
+                                    form.bundleItems.length === 0 && (
+
+                                    <div
+                                        className="
+                                            mt-4
+                                            rounded-xl
+                                            border
+                                            border-dashed
+                                            border-slate-300
+                                            bg-white
+                                            px-4
+                                            py-6
+                                            text-center
+                                            text-sm
+                                            text-slate-400
+                                        "
+                                    >
+                                        لم تتم إضافة أي مكونات بعد.
+                                    </div>
+
+                                )}
+
+
+                                <div
+                                    className="
+                                        mt-4
+                                        space-y-3
+                                    "
+                                >
+
+                                    {form.bundleItems.map(
+                                        (
+                                            item,
+                                            index
+                                        ) => {
+
+                                            const selectedIds =
+                                                new Set(
+                                                    form.bundleItems
+                                                        .filter(
+                                                            (
+                                                                _,
+                                                                itemIndex
+                                                            ) =>
+                                                                itemIndex !==
+                                                                index
+                                                        )
+                                                        .map(
+                                                            current =>
+                                                                current.product
+                                                        )
+                                                );
+
+
+                                            return (
+
+                                                <div
+                                                    key={`${index}-${item.product}`}
+                                                    className="
+                                                        grid
+                                                        gap-3
+                                                        rounded-xl
+                                                        border
+                                                        border-slate-200
+                                                        bg-white
+                                                        p-3
+                                                        md:grid-cols-[1fr_120px_auto]
+                                                        md:items-end
+                                                    "
+                                                >
+
+                                                    <FormField
+                                                        label="المنتج"
+                                                    >
+
+                                                        <select
+                                                            required
+                                                            value={
+                                                                item.product
+                                                            }
+                                                            onChange={
+                                                                event =>
+                                                                    updateBundleItem(
+                                                                        index,
+                                                                        "product",
+                                                                        event.target.value
+                                                                    )
+                                                            }
+                                                            className={
+                                                                inputClass
+                                                            }
+                                                        >
+
+                                                            <option value="">
+                                                                اختر المنتج
+                                                            </option>
+
+
+                                                            {bundleProducts
+                                                                .filter(
+                                                                    option =>
+                                                                        !selectedIds.has(
+                                                                            option._id
+                                                                        ) ||
+                                                                        option._id ===
+                                                                            item.product
+                                                                )
+                                                                .map(
+                                                                    option => (
+
+                                                                        <option
+                                                                            key={
+                                                                                option._id
+                                                                            }
+                                                                            value={
+                                                                                option._id
+                                                                            }
+                                                                        >
+
+                                                                            {
+                                                                                option.title
+                                                                            }
+
+                                                                            {
+                                                                                option.sku
+                                                                                    ? ` — ${option.sku}`
+                                                                                    : ""
+                                                                            }
+
+                                                                        </option>
+
+                                                                    )
+                                                                )}
+
+                                                        </select>
+
+                                                    </FormField>
+
+
+                                                    <FormField
+                                                        label="الكمية"
+                                                    >
+
+                                                        <input
+                                                            required
+                                                            type="number"
+                                                            min="1"
+                                                            step="1"
+                                                            value={
+                                                                item.quantity
+                                                            }
+                                                            onChange={
+                                                                event =>
+                                                                    updateBundleItem(
+                                                                        index,
+                                                                        "quantity",
+                                                                        event.target.value
+                                                                    )
+                                                            }
+                                                            className={
+                                                                inputClass
+                                                            }
+                                                        />
+
+                                                    </FormField>
+
+
+                                                    <button
+                                                        type="button"
+                                                        onClick={
+                                                            () =>
+                                                                removeBundleItem(
+                                                                    index
+                                                                )
+                                                        }
+                                                        className="
+                                                            inline-flex
+                                                            h-[42px]
+                                                            items-center
+                                                            justify-center
+                                                            rounded-lg
+                                                            border
+                                                            border-red-200
+                                                            px-3
+                                                            text-red-600
+                                                            hover:bg-red-50
+                                                        "
+                                                        aria-label="حذف المكون"
+                                                    >
+
+                                                        <Trash2
+                                                            size={17}
+                                                        />
+
+                                                    </button>
+
+                                                </div>
+
+                                            );
+
+                                        }
+                                    )}
+
+                                </div>
+
+                            </div>
+
+                        )}
+
+                    </div>
+
+
                     <div className="mt-5">
 
                         <FormField label="الوصف">
@@ -1210,19 +1849,23 @@ export default function ProductFormModal({
                         />
 
 
-                        <CheckboxField
-                            label="تتبع المخزون"
-                            checked={
-                                form.trackInventory
-                            }
-                            onChange={
-                                value =>
-                                    updateField(
-                                        "trackInventory",
-                                        value
-                                    )
-                            }
-                        />
+                        {!form.isBundle && (
+
+                            <CheckboxField
+                                label="تتبع المخزون"
+                                checked={
+                                    form.trackInventory
+                                }
+                                onChange={
+                                    value =>
+                                        updateField(
+                                            "trackInventory",
+                                            value
+                                        )
+                                }
+                            />
+
+                        )}
 
                     </div>
 

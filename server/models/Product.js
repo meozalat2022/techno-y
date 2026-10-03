@@ -110,11 +110,19 @@ const productSchema = new mongoose.Schema(
     },
 
     bundleItems: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "Product",
-      },
-    ],
+    {
+        product: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "Product",
+            required: true,
+        },
+        quantity: {
+            type: Number,
+            required: true,
+            min: 1,
+        },
+    },
+],
 
     views: {
       type: Number,

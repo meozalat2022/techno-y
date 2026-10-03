@@ -2,36 +2,49 @@ const Product =
     require("../../models/Product");
 
 
-const getProducts = async (queryParams) => {
+const applyBundleAvailability =
+    require("./applyBundleAvailability");
+
+
+const getProducts = async (
+    queryParams
+) => {
 
     const page =
         Math.max(
-            Number(queryParams.page) || 1,
+            Number(
+                queryParams.page
+            ) || 1,
             1
         );
+
 
     const limit =
         Math.min(
             Math.max(
-                Number(queryParams.limit) || 12,
+                Number(
+                    queryParams.limit
+                ) || 24,
                 1
             ),
             100
         );
 
-    const skip =
-        (page - 1) * limit;
-
 
     const filter = {
+
         isActive: true,
+
     };
 
 
-    if (queryParams.search) {
+    if (
+        queryParams.search
+    ) {
 
         const keyword =
             queryParams.search.trim();
+
 
         if (keyword) {
 
@@ -39,15 +52,25 @@ const getProducts = async (queryParams) => {
 
                 {
                     title: {
-                        $regex: keyword,
-                        $options: "i",
+
+                        $regex:
+                            keyword,
+
+                        $options:
+                            "i",
+
                     },
                 },
 
                 {
                     sku: {
-                        $regex: keyword,
-                        $options: "i",
+
+                        $regex:
+                            keyword,
+
+                        $options:
+                            "i",
+
                     },
                 },
 
@@ -58,7 +81,9 @@ const getProducts = async (queryParams) => {
     }
 
 
-    if (queryParams.category) {
+    if (
+        queryParams.category
+    ) {
 
         filter.category =
             queryParams.category;
@@ -66,7 +91,9 @@ const getProducts = async (queryParams) => {
     }
 
 
-    if (queryParams.brand) {
+    if (
+        queryParams.brand
+    ) {
 
         filter.brand =
             queryParams.brand;
@@ -75,10 +102,12 @@ const getProducts = async (queryParams) => {
 
 
     if (
-        queryParams.featured === "true"
+        queryParams.featured ===
+        "true"
     ) {
 
-        filter.featured = true;
+        filter.featured =
+            true;
 
     }
 
@@ -86,19 +115,27 @@ const getProducts = async (queryParams) => {
     const sortOptions = {
 
         newest: {
+
             createdAt: -1,
+
         },
 
         oldest: {
+
             createdAt: 1,
+
         },
 
         price_asc: {
+
             regularPrice: 1,
+
         },
 
         price_desc: {
+
             regularPrice: -1,
+
         },
 
     };
@@ -117,8 +154,32 @@ const getProducts = async (queryParams) => {
         );
 
 
+    const totalPages =
+        Math.max(
+            Math.ceil(
+                totalProducts /
+                    limit
+            ),
+            1
+        );
+
+
+    const currentPage =
+        Math.min(
+            page,
+            totalPages
+        );
+
+
+    const skip =
+        (currentPage - 1) *
+        limit;
+
+
     const products =
-        await Product.find(filter)
+        await Product.find(
+            filter
+        )
 
             .populate(
                 "category",
@@ -137,13 +198,24 @@ const getProducts = async (queryParams) => {
             .limit(limit);
 
 
+    /*
+     * Calculate Bundle availability
+     * from component inventory before
+     * returning the products to the client.
+     */
+    await applyBundleAvailability(
+        products
+    );
+
+
     return {
 
         products,
 
         pagination: {
 
-            page,
+            page:
+                currentPage,
 
             limit,
 
@@ -151,9 +223,7 @@ const getProducts = async (queryParams) => {
                 totalProducts,
 
             pages:
-                Math.ceil(
-                    totalProducts / limit
-                ),
+                totalPages,
 
         },
 
@@ -162,4 +232,5 @@ const getProducts = async (queryParams) => {
 };
 
 
-module.exports = getProducts;
+module.exports =
+    getProducts;

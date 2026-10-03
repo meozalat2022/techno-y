@@ -8,6 +8,7 @@ const saveOrder = async ({
     orderItems,
     totals,
     loyalty,
+    promotion,
     user,
     session,
 }) => {
@@ -43,6 +44,8 @@ const saveOrder = async ({
         totals,
 
         loyalty,
+
+        promotion,
     }],
     {
         session,

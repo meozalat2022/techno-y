@@ -1,3 +1,6 @@
+const mongoose =
+    require("mongoose");
+
 const Product =
     require("../../models/Product");
 
@@ -12,6 +15,9 @@ const generateUniqueSlug =
 
 const MESSAGES =
     require("../../constants/messages");
+
+const validateBundleDefinition =
+    require("./validateBundleDefinition");
 
 
 const updateProduct = async ({
@@ -49,7 +55,6 @@ const updateProduct = async ({
      */
     delete data.stockQuantity;
     delete data.stockStatus;
-    delete data.onlineSafetyStock;
 
 
     if (data.title) {
@@ -121,6 +126,69 @@ const updateProduct = async ({
             );
 
         }
+
+    }
+
+
+    /*
+     * Bundle validation
+     *
+     * If either bundle field is being changed,
+     * validate the complete resulting bundle
+     * definition rather than validating only the
+     * submitted fields.
+     */
+    if (
+        Object.prototype.hasOwnProperty.call(
+            data,
+            "isBundle"
+        ) ||
+        Object.prototype.hasOwnProperty.call(
+            data,
+            "bundleItems"
+        )
+    ) {
+
+        const resultingIsBundle =
+            Object.prototype.hasOwnProperty.call(
+                data,
+                "isBundle"
+            )
+                ? Boolean(data.isBundle)
+                : Boolean(product.isBundle);
+
+
+        const resultingBundleItems =
+            Object.prototype.hasOwnProperty.call(
+                data,
+                "bundleItems"
+            )
+                ? data.bundleItems
+                : product.bundleItems;
+
+
+        const normalizedBundleItems =
+            await validateBundleDefinition({
+
+                isBundle:
+                    resultingIsBundle,
+
+                bundleItems:
+                    resultingBundleItems,
+
+                productId:
+                    new mongoose.Types.ObjectId(
+                        productId
+                    ),
+
+            });
+
+
+        data.isBundle =
+            resultingIsBundle;
+
+        data.bundleItems =
+            normalizedBundleItems;
 
     }
 

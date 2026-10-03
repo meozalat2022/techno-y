@@ -1,42 +1,52 @@
 const mongoose =
     require("mongoose");
 
+
 const Order =
     require("../../models/Order");
+
 
 const inventoryService =
     require("../inventory");
 
+
 const loyaltyService =
     require("../loyalty");
 
+
 const MESSAGES =
     require("../../constants/messages");
+
 
 const ORDER_STATUS =
     require(
         "../../constants/orderStatus"
     );
 
+
 const ORDER_STATUS_FLOW =
     require(
         "../../constants/orderStatusFlow"
     );
+
 
 const STOCK_OPERATIONS =
     require(
         "../../constants/stockOperations"
     );
 
+
 const INVENTORY_MOVEMENT_TYPES =
     require(
         "../../constants/inventoryMovementTypes"
     );
 
+
 const REFERENCE_TYPES =
     require(
         "../../constants/inventoryReferenceTypes"
     );
+
 
 
 const applyPaymentPatch = (
@@ -49,7 +59,9 @@ const applyPaymentPatch = (
         typeof paymentPatch !==
             "object"
     ) {
+
         return;
+
     }
 
 
@@ -77,6 +89,78 @@ const applyPaymentPatch = (
     );
 
 };
+
+
+
+/*
+ * Restore physical stock for one product.
+ */
+const restorePhysicalProduct =
+    async ({
+        productId,
+        quantity,
+        order,
+        user,
+        session,
+    }) => {
+
+        const stockUpdate =
+            await inventoryService
+                .updateStock({
+
+                    productId,
+
+                    quantity,
+
+                    operation:
+                        STOCK_OPERATIONS
+                            .INCREASE,
+
+                    session,
+
+                });
+
+
+        await inventoryService
+            .createMovement({
+
+                product:
+                    productId,
+
+                type:
+                    INVENTORY_MOVEMENT_TYPES
+                        .ORDER_CANCELLATION,
+
+                quantity,
+
+                previousStock:
+                    stockUpdate
+                        .previousStock,
+
+                newStock:
+                    stockUpdate
+                        .newStock,
+
+                referenceType:
+                    REFERENCE_TYPES
+                        .ORDER,
+
+                reference:
+                    order.orderNumber,
+
+                notes:
+                    "Order cancelled",
+
+                performedBy:
+                    user?._id ||
+                    null,
+
+                session,
+
+            });
+
+    };
+
 
 
 const updateOrderStatus = async ({
@@ -117,12 +201,7 @@ const updateOrderStatus = async ({
 
         /*
          * withTransaction() automatically retries
-         * transient transaction errors such as
-         * MongoDB write conflicts.
-         *
-         * This is important for OPay because the
-         * merchant /close request and OPay callback
-         * can reconcile the same order concurrently.
+         * transient transaction errors.
          */
         await session.withTransaction(
             async () => {
@@ -151,16 +230,6 @@ const updateOrderStatus = async ({
                     newStatus;
 
 
-                /*
-                 * Treat an already-applied status
-                 * as idempotent instead of rejecting
-                 * it as an invalid transition.
-                 *
-                 * If an old/inconsistent cancelled
-                 * order somehow has not had inventory
-                 * restored, the cancellation block
-                 * below can still repair it.
-                 */
                 if (
                     !alreadyAtStatus
                 ) {
@@ -191,6 +260,14 @@ const updateOrderStatus = async ({
                 }
 
 
+
+                /*
+                 * CANCELLED
+                 *
+                 * Restore the exact physical
+                 * products that were deducted when
+                 * the order was created.
+                 */
                 if (
                     newStatus ===
                         ORDER_STATUS
@@ -204,64 +281,108 @@ const updateOrderStatus = async ({
                         of order.items
                     ) {
 
-                        const stockUpdate =
-                            await inventoryService
-                                .updateStock({
+                        /*
+                         * NORMAL PRODUCT
+                         */
+                        if (
+                            item.isBundle !==
+                            true
+                        ) {
 
-                                    productId:
-                                        item.product,
+                            await restorePhysicalProduct({
 
-                                    quantity:
-                                        item.quantity,
-
-                                    operation:
-                                        STOCK_OPERATIONS
-                                            .INCREASE,
-
-                                    session,
-
-                                });
-
-
-                        await inventoryService
-                            .createMovement({
-
-                                product:
+                                productId:
                                     item.product,
-
-                                type:
-                                    INVENTORY_MOVEMENT_TYPES
-                                        .ORDER_CANCELLATION,
 
                                 quantity:
                                     item.quantity,
 
-                                previousStock:
-                                    stockUpdate
-                                        .previousStock,
+                                order,
 
-                                newStock:
-                                    stockUpdate
-                                        .newStock,
-
-                                referenceType:
-                                    REFERENCE_TYPES
-                                        .ORDER,
-
-                                reference:
-                                    order
-                                        .orderNumber,
-
-                                notes:
-                                    "Order cancelled",
-
-                                performedBy:
-                                    user?._id ||
-                                    null,
+                                user,
 
                                 session,
 
                             });
+
+                            continue;
+
+                        }
+
+
+
+                        /*
+                         * BUNDLE PRODUCT
+                         *
+                         * Restore from the snapshot
+                         * stored in the order.
+                         */
+                        const components =
+                            Array.isArray(
+                                item.bundleComponents
+                            )
+                                ? item.bundleComponents
+                                : [];
+
+
+                        if (
+                            components.length === 0
+                        ) {
+
+                            throw new Error(
+                                "Bundle order item has no component snapshot."
+                            );
+
+                        }
+
+
+                        for (
+                            const component
+                            of components
+                        ) {
+
+                            const componentQuantity =
+                                Number(
+                                    component.quantity
+                                );
+
+
+                            if (
+                                !Number.isInteger(
+                                    componentQuantity
+                                ) ||
+                                componentQuantity <= 0
+                            ) {
+
+                                throw new Error(
+                                    "Invalid Bundle component quantity."
+                                );
+
+                            }
+
+
+                            const totalQuantity =
+                                item.quantity *
+                                componentQuantity;
+
+
+                            await restorePhysicalProduct({
+
+                                productId:
+                                    component.product,
+
+                                quantity:
+                                    totalQuantity,
+
+                                order,
+
+                                user,
+
+                                session,
+
+                            });
+
+                        }
 
                     }
 
@@ -273,11 +394,10 @@ const updateOrderStatus = async ({
                 }
 
 
+
                 /*
-                 * For terminal OPay states we persist
-                 * the payment result in the SAME
-                 * transaction as the cancellation /
-                 * inventory restoration.
+                 * Persist payment changes in the
+                 * same transaction.
                  */
                 applyPaymentPatch(
                     order,
@@ -287,6 +407,7 @@ const updateOrderStatus = async ({
 
                 order.status =
                     newStatus;
+
 
 
                 if (
@@ -310,6 +431,7 @@ const updateOrderStatus = async ({
                 }
 
 
+
                 if (
                     newStatus ===
                     ORDER_STATUS
@@ -329,6 +451,7 @@ const updateOrderStatus = async ({
                         });
 
                 }
+
 
 
                 await order.save({

@@ -17,6 +17,7 @@ import {
     ScanLine,
     ShoppingCart,
     Tags,
+    Ticket,
     Truck,
     Undo2,
     X,
@@ -70,6 +71,17 @@ const links = [
 
         icon:
             Tags,
+    },
+
+    {
+        label:
+            "أكواد الخصم",
+
+        href:
+            "/admin/promotions",
+
+        icon:
+            Ticket,
     },
 
     {

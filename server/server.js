@@ -156,6 +156,12 @@ const loyaltyRoutes =
     );
 
 
+const promotionRoutes =
+    require(
+        "./routes/promotionRoutes"
+    );
+
+
 app.use(
     cors({
 
@@ -276,6 +282,12 @@ app.use(
 app.use(
     "/api/loyalty",
     loyaltyRoutes
+);
+
+
+app.use(
+    "/api/promotions",
+    promotionRoutes
 );
 
 

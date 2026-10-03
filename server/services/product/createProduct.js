@@ -16,13 +16,19 @@ const MESSAGES =
 const STOCK_STATUS =
     require("../../constants/stockStatus");
 
+const validateBundleDefinition =
+    require("./validateBundleDefinition");
 
-const createProduct = async (productData) => {
+
+const createProduct = async (
+    productData
+) => {
 
     const category =
         await Category.findById(
             productData.category
         );
+
 
     if (!category) {
 
@@ -38,6 +44,7 @@ const createProduct = async (productData) => {
             productData.brand
         );
 
+
     if (!brand) {
 
         throw new Error(
@@ -52,6 +59,7 @@ const createProduct = async (productData) => {
             sku: productData.sku,
         });
 
+
     if (existingSku) {
 
         throw new Error(
@@ -62,6 +70,33 @@ const createProduct = async (productData) => {
     }
 
 
+    /*
+     * Validate bundle definition.
+     *
+     * For normal products:
+     * bundleItems must be empty.
+     *
+     * For bundles:
+     * components must exist, be active,
+     * unique, non-bundles, etc.
+     */
+    const normalizedBundleItems =
+        await validateBundleDefinition({
+
+            isBundle:
+                Boolean(
+                    productData.isBundle
+                ),
+
+            bundleItems:
+                productData.bundleItems,
+
+            productId:
+                null,
+
+        });
+
+
     const slug =
         await generateUniqueSlug(
             productData.title
@@ -70,17 +105,30 @@ const createProduct = async (productData) => {
 
     /*
      * Stock is owned by the Inventory module.
-     * A newly created product therefore starts
-     * with zero stock.
+     *
+     * A newly created product therefore
+     * starts with zero physical stock.
+     *
+     * Bundles do not have independent
+     * physical stock.
      */
     const product =
         await Product.create({
 
             ...productData,
 
+            isBundle:
+                Boolean(
+                    productData.isBundle
+                ),
+
+            bundleItems:
+                normalizedBundleItems,
+
             slug,
 
-            stockQuantity: 0,
+            stockQuantity:
+                0,
 
             stockStatus:
                 STOCK_STATUS.OUT_OF_STOCK,
@@ -93,6 +141,7 @@ const createProduct = async (productData) => {
         "name"
     );
 
+
     await product.populate(
         "brand",
         "name"
@@ -104,4 +153,5 @@ const createProduct = async (productData) => {
 };
 
 
-module.exports = createProduct;
+module.exports =
+    createProduct;

@@ -1101,6 +1101,27 @@ function OrderSummary({
             </div>
 
 
+            {(Number(order.promotion?.discountAmount || 0) > 0) && (
+                <div className="mt-5 rounded-xl border border-[#D8E5E8] bg-[#F2F8F9] p-4">
+                    <div className="text-sm font-black text-[#252525]">كود الخصم</div>
+                    <div className="mt-3 space-y-2 text-xs text-[#6B6862]">
+                        <LoyaltyInfoRow
+                            label="الكود المستخدم"
+                            value={order.promotion.code || "—"}
+                        />
+                        <LoyaltyInfoRow
+                            label="نسبة الخصم"
+                            value={`${order.promotion.discountPercent}%`}
+                        />
+                        <LoyaltyInfoRow
+                            label="قيمة الخصم"
+                            value={`- ${formatCurrency(order.promotion.discountAmount)}`}
+                        />
+                    </div>
+                </div>
+            )}
+
+
             {(Number(order.loyalty?.pointsRedeemed || 0) > 0 || Number(order.loyalty?.pointsPending || 0) > 0 || Number(order.loyalty?.pointsAwarded || 0) > 0) && (
                 <div className="mt-5 rounded-xl border border-[#F0DFC0] bg-[#FFF9EB] p-4">
                     <div className="text-sm font-black text-[#252525]">نقاط الولاء</div>
