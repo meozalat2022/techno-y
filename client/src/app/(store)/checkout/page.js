@@ -85,6 +85,54 @@ import formatCurrency from
 
 
 export default function CheckoutPage() {
+    const APPLIED_BUNDLE_RECOMMENDATION_KEY =
+    "technoy-applied-bundle-recommendation-v1";
+
+
+const getAppliedBundleRecommendation =
+    () => {
+
+        if (
+            typeof window ===
+            "undefined"
+        ) {
+            return null;
+        }
+
+
+        try {
+
+            const saved =
+                window.localStorage.getItem(
+                    APPLIED_BUNDLE_RECOMMENDATION_KEY
+                );
+
+
+            if (!saved) {
+                return null;
+            }
+
+
+            const parsed =
+                JSON.parse(
+                    saved
+                );
+
+
+            if (
+                !parsed?.bundleId
+            ) {
+                return null;
+            }
+
+
+            return parsed;
+
+        } catch {
+
+            return null;
+        }
+    };
 
     const router =
         useRouter();
@@ -373,7 +421,8 @@ export default function CheckoutPage() {
 
 
             setSubmitting(true);
-
+const appliedBundleRecommendation =
+        getAppliedBundleRecommendation();
 
             try {
 
@@ -431,12 +480,23 @@ export default function CheckoutPage() {
                             promoCode:
                                 appliedPromo?.code ||
                                 "",
+                                bundleRecommendation:
+    appliedBundleRecommendation,
 
                         });
 
 
                 const order =
                     response.data;
+                    try {
+
+    window.localStorage.removeItem(
+        APPLIED_BUNDLE_RECOMMENDATION_KEY
+    );
+
+} catch {
+    // localStorage is optional.
+}
 
 
                 if (

@@ -7,9 +7,14 @@ import {
     useState,
 } from "react";
 
+
 import {
     Banknote,
     CalendarDays,
+    Gift,
+    MousePointerClick,
+    Percent,
+    ShoppingBag,
     CheckCircle2,
     CircleEllipsis,
     CircleX,
@@ -20,44 +25,68 @@ import {
     Truck,
 } from "lucide-react";
 
+
 import dashboardService from
     "@/services/dashboardService";
+
 
 import ar from
     "@/locales/ar";
 
 
-const formatCurrency = value => {
+const formatCurrency =
+    value => {
 
-    return new Intl.NumberFormat(
-        "ar-EG",
-        {
-            style: "currency",
-            currency: "EGP",
-            maximumFractionDigits: 2,
-        }
-    ).format(
-        Number(value) || 0
-    );
+        return new Intl.NumberFormat(
 
-};
+            "ar-EG",
+
+            {
+
+                style:
+                    "currency",
+
+                currency:
+                    "EGP",
+
+                maximumFractionDigits:
+                    2,
+
+            }
+
+        ).format(
+
+            Number(value) || 0
+
+        );
+
+    };
 
 
-const formatNumber = value => {
+const formatNumber =
+    value => {
 
-    return new Intl.NumberFormat(
-        "ar-EG"
-    ).format(
-        Number(value) || 0
-    );
+        return new Intl.NumberFormat(
 
-};
+            "ar-EG"
+
+        ).format(
+
+            Number(value) || 0
+
+        );
+
+    };
 
 
 function StatCard({
+
     title,
+
     value,
+
     icon: Icon,
+
 }) {
 
     return (
@@ -139,9 +168,13 @@ function StatCard({
 
 
 function StatusCard({
+
     title,
+
     value,
+
     icon: Icon,
+
 }) {
 
     return (
@@ -220,6 +253,7 @@ function StatusCard({
 
 export default function DashboardPage() {
 
+
     const [
         stats,
         setStats,
@@ -243,11 +277,17 @@ export default function DashboardPage() {
 
     const loadDashboard =
         useCallback(
+
             async () => {
 
-                setLoading(true);
+                setLoading(
+                    true
+                );
 
-                setError("");
+
+                setError(
+                    ""
+                );
 
 
                 try {
@@ -269,6 +309,7 @@ export default function DashboardPage() {
                         error.response
                             ?.data
                             ?.message ||
+
                         ar.dashboard
                             .loadError
 
@@ -276,22 +317,29 @@ export default function DashboardPage() {
 
                 } finally {
 
-                    setLoading(false);
+                    setLoading(
+                        false
+                    );
 
                 }
 
             },
+
             []
+
         );
 
 
     useEffect(
+
         () => {
 
             loadDashboard();
 
         },
+
         [loadDashboard]
+
     );
 
 
@@ -322,6 +370,7 @@ export default function DashboardPage() {
                             text-slate-500
                         "
                     />
+
 
                     <p
                         className="
@@ -396,6 +445,7 @@ export default function DashboardPage() {
     const summaryCards = [
 
         {
+
             title:
                 ar.dashboard
                     .totalOrders,
@@ -407,9 +457,11 @@ export default function DashboardPage() {
 
             icon:
                 ShoppingCart,
+
         },
 
         {
+
             title:
                 ar.dashboard
                     .todayOrders,
@@ -421,9 +473,11 @@ export default function DashboardPage() {
 
             icon:
                 CalendarDays,
+
         },
 
         {
+
             title:
                 ar.dashboard
                     .totalRevenue,
@@ -435,9 +489,11 @@ export default function DashboardPage() {
 
             icon:
                 Banknote,
+
         },
 
         {
+
             title:
                 ar.dashboard
                     .todayRevenue,
@@ -449,6 +505,7 @@ export default function DashboardPage() {
 
             icon:
                 Banknote,
+
         },
 
     ];
@@ -457,6 +514,7 @@ export default function DashboardPage() {
     const statusCards = [
 
         {
+
             title:
                 ar.dashboard.pending,
 
@@ -465,9 +523,11 @@ export default function DashboardPage() {
 
             icon:
                 Clock3,
+
         },
 
         {
+
             title:
                 ar.dashboard.confirmed,
 
@@ -476,9 +536,11 @@ export default function DashboardPage() {
 
             icon:
                 CheckCircle2,
+
         },
 
         {
+
             title:
                 ar.dashboard.processing,
 
@@ -487,9 +549,11 @@ export default function DashboardPage() {
 
             icon:
                 CircleEllipsis,
+
         },
 
         {
+
             title:
                 ar.dashboard.packed,
 
@@ -498,9 +562,11 @@ export default function DashboardPage() {
 
             icon:
                 PackageCheck,
+
         },
 
         {
+
             title:
                 ar.dashboard.shipped,
 
@@ -509,9 +575,11 @@ export default function DashboardPage() {
 
             icon:
                 Truck,
+
         },
 
         {
+
             title:
                 ar.dashboard.delivered,
 
@@ -520,9 +588,11 @@ export default function DashboardPage() {
 
             icon:
                 CheckCircle2,
+
         },
 
         {
+
             title:
                 ar.dashboard.cancelled,
 
@@ -531,14 +601,28 @@ export default function DashboardPage() {
 
             icon:
                 CircleX,
+
         },
 
     ];
 
 
+    const bundleAnalytics =
+        stats
+            ?.bundleRecommendationAnalytics ||
+        {};
+
+
+    const topBundles =
+        bundleAnalytics
+            .topBundles ||
+        [];
+
+
     return (
 
         <div>
+
 
             <div
                 className="
@@ -578,10 +662,13 @@ export default function DashboardPage() {
 
 
                 <button
+
                     type="button"
+
                     onClick={
                         loadDashboard
                     }
+
                     className="
                         flex
                         w-fit
@@ -599,6 +686,7 @@ export default function DashboardPage() {
                         transition
                         hover:bg-slate-50
                     "
+
                 >
 
                     <RefreshCw
@@ -713,6 +801,401 @@ export default function DashboardPage() {
                 </div>
 
             </section>
+
+
+            <section
+                className="
+                    mt-7
+                    rounded-2xl
+                    border
+                    border-slate-200
+                    bg-white
+                    p-5
+                    shadow-sm
+                    md:p-6
+                "
+            >
+
+                <div>
+
+                    <h2
+                        className="
+                            text-lg
+                            font-bold
+                            text-slate-900
+                        "
+                    >
+                        {
+                            ar.dashboard
+                                .bundleAnalytics
+                        }
+                    </h2>
+
+
+                    <p
+                        className="
+                            mt-1
+                            text-sm
+                            text-slate-500
+                        "
+                    >
+                        {
+                            ar.dashboard
+                                .bundleAnalyticsDescription
+                        }
+                    </p>
+
+                </div>
+
+
+                <div
+                    className="
+                        mt-5
+                        grid
+                        gap-4
+                        sm:grid-cols-2
+                        xl:grid-cols-5
+                    "
+                >
+
+                    <StatCard
+
+                        title={
+                            ar.dashboard
+                                .recommendationsShown
+                        }
+
+                        value={
+                            formatNumber(
+                                bundleAnalytics
+                                    .shown
+                            )
+                        }
+
+                        icon={
+                            MousePointerClick
+                        }
+
+                    />
+
+
+                    <StatCard
+
+                        title={
+                            ar.dashboard
+                                .recommendationsAccepted
+                        }
+
+                        value={
+                            formatNumber(
+                                bundleAnalytics
+                                    .accepted
+                            )
+                        }
+
+                        icon={
+                            Gift
+                        }
+
+                    />
+
+
+                    <StatCard
+
+                        title={
+                            ar.dashboard
+                                .acceptanceRate
+                        }
+
+                        value={
+
+                            `${
+
+                                formatNumber(
+
+                                    bundleAnalytics
+                                        .acceptanceRate
+
+                                )
+
+                            }%`
+
+                        }
+
+                        icon={
+                            Percent
+                        }
+
+                    />
+
+
+                    <StatCard
+
+                        title={
+                            ar.dashboard
+                                .bundleUnitsSold
+                        }
+
+                        value={
+                            formatNumber(
+                                bundleAnalytics
+                                    .bundleUnitsSold
+                            )
+                        }
+
+                        icon={
+                            ShoppingBag
+                        }
+
+                    />
+
+
+                    <StatCard
+
+                        title={
+                            ar.dashboard
+                                .bundleRevenue
+                        }
+
+                        value={
+                            formatCurrency(
+                                bundleAnalytics
+                                    .bundleRevenue
+                            )
+                        }
+
+                        icon={
+                            Banknote
+                        }
+
+                    />
+
+                </div>
+
+
+                <div
+                    className="
+                        mt-6
+                        overflow-hidden
+                        rounded-xl
+                        border
+                        border-slate-200
+                    "
+                >
+
+                    <div
+                        className="
+                            border-b
+                            border-slate-200
+                            bg-slate-50
+                            px-4
+                            py-3
+                        "
+                    >
+
+                        <h3
+                            className="
+                                text-sm
+                                font-bold
+                                text-slate-800
+                            "
+                        >
+                            {
+                                ar.dashboard
+                                    .topBundles
+                            }
+                        </h3>
+
+                    </div>
+
+
+                    <div
+                        className="
+                            overflow-x-auto
+                        "
+                    >
+
+                        <table
+                            className="
+                                min-w-full
+                                text-right
+                                text-sm
+                            "
+                        >
+
+                            <thead
+                                className="
+                                    border-b
+                                    border-slate-200
+                                    text-slate-500
+                                "
+                            >
+
+                                <tr>
+
+                                    <th
+                                        className="
+                                            px-4
+                                            py-3
+                                            font-medium
+                                        "
+                                    >
+                                        {
+                                            ar.dashboard
+                                                .bundleName
+                                        }
+                                    </th>
+
+
+                                    <th
+                                        className="
+                                            px-4
+                                            py-3
+                                            font-medium
+                                        "
+                                    >
+                                        {
+                                            ar.dashboard
+                                                .unitsSold
+                                        }
+                                    </th>
+
+
+                                    <th
+                                        className="
+                                            px-4
+                                            py-3
+                                            font-medium
+                                        "
+                                    >
+                                        {
+                                            ar.dashboard
+                                                .revenue
+                                        }
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {
+                                    topBundles.map(
+                                        bundle => (
+
+                                            <tr
+
+                                                key={
+                                                    String(
+                                                        bundle.bundleId
+                                                    )
+                                                }
+
+                                                className="
+                                                    border-b
+                                                    border-slate-100
+                                                    last:border-b-0
+                                                "
+
+                                            >
+
+                                                <td
+                                                    className="
+                                                        px-4
+                                                        py-3
+                                                        font-medium
+                                                        text-slate-800
+                                                    "
+                                                >
+                                                    {
+                                                        bundle.title
+                                                    }
+                                                </td>
+
+
+                                                <td
+                                                    className="
+                                                        px-4
+                                                        py-3
+                                                        text-slate-600
+                                                    "
+                                                >
+                                                    {
+                                                        formatNumber(
+                                                            bundle.unitsSold
+                                                        )
+                                                    }
+                                                </td>
+
+
+                                                <td
+                                                    className="
+                                                        px-4
+                                                        py-3
+                                                        font-medium
+                                                        text-slate-800
+                                                    "
+                                                >
+                                                    {
+                                                        formatCurrency(
+                                                            bundle.revenue
+                                                        )
+                                                    }
+                                                </td>
+
+                                            </tr>
+
+                                        )
+                                    )
+                                }
+
+
+                                {
+                                    topBundles.length ===
+                                    0 && (
+
+                                        <tr>
+
+                                            <td
+
+                                                colSpan={
+                                                    3
+                                                }
+
+                                                className="
+                                                    px-4
+                                                    py-6
+                                                    text-center
+                                                    text-sm
+                                                    text-slate-500
+                                                "
+
+                                            >
+
+                                                {
+                                                    ar.dashboard
+                                                        .noBundleSales
+                                                }
+
+                                            </td>
+
+                                        </tr>
+
+                                    )
+                                }
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
+
+            </section>
+
 
         </div>
 

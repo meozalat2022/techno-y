@@ -1,39 +1,96 @@
 const express =
     require("express");
 
+
 const router =
     express.Router();
 
+
 const {
+
     createProduct,
+
     getProducts,
+
+    getBundleRecommendations,
+
+    trackBundleRecommendation,
+
     getProductBySlug,
+
     updateProduct,
+
     deleteProduct,
+
 } =
-    require("../controllers/productController");
+    require(
+        "../controllers/productController"
+    );
+
 
 const {
     protect,
 } =
-    require("../middleware/authMiddleware");
+    require(
+        "../middleware/authMiddleware"
+    );
+
 
 const admin =
-    require("../middleware/adminMiddleware");
+    require(
+        "../middleware/adminMiddleware"
+    );
+
 
 const {
+
     createProductValidation,
+
     updateProductValidation,
+
 } =
-    require("../validations/productValidation");
+    require(
+        "../validations/productValidation"
+    );
+
 
 const validate =
-    require("../middleware/validateMiddleware");
+    require(
+        "../middleware/validateMiddleware"
+    );
+
+
+const {
+    bundleRecommendationLimiter,
+} =
+    require(
+        "../middleware/rateLimiters"
+    );
 
 
 router.get(
     "/",
     getProducts
+);
+
+
+router.post(
+    "/bundle-recommendations",
+    getBundleRecommendations
+);
+
+
+/*
+ * Public endpoint used by the storefront
+ * to record recommendation analytics.
+ *
+ * It intentionally does not require login.
+ */
+
+router.post(
+    "/bundle-recommendation-events",
+    bundleRecommendationLimiter,
+    trackBundleRecommendation
 );
 
 
@@ -71,4 +128,5 @@ router.delete(
 );
 
 
-module.exports = router;
+module.exports =
+    router;

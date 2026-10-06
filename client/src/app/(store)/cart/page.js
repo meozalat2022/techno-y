@@ -1,11 +1,9 @@
 "use client";
 
 
-import {
-    useEffect,
-} from "react";
-
 import Link from "next/link";
+import BundleRecommendation from
+    "@/components/store/cart/BundleRecommendation";
 
 import {
     ArrowLeft,
@@ -14,117 +12,43 @@ import {
     Trash2,
 } from "lucide-react";
 
-import SafeImage from
-    "@/components/store/SafeImage";
-
 import {
     useCart,
 } from "@/context/CartContext";
 
 
-import formatCurrency from
-    "@/utils/formatCurrency";
 
-import getOnlineAvailableQuantity from
-    "@/utils/getOnlineAvailableQuantity";
 
-import productService from
-    "@/services/productService";
+const formatCurrency =
+    value =>
+        new Intl.NumberFormat(
+            "ar-EG",
+            {
+                style: "currency",
+                currency: "EGP",
+                maximumFractionDigits: 2,
+            }
+        ).format(
+            Number(value) ||
+            0
+        );
 
 
 export default function CartPage() {
 
-    const {
-        items,
-        hydrated,
-        itemCount,
-        subtotal,
-        updateQuantity,
-        syncProductAvailability,
-        removeItem,
-        clearCart,
-    } =
-        useCart();
+  
 
-
-    useEffect(
-        () => {
-
-            if (
-                !hydrated ||
-                items.length ===
-                    0
-            ) {
-                return;
-            }
-
-
-            let active =
-                true;
-
-
-            const refreshAvailability =
-                async () => {
-
-                    const products =
-                        await Promise.all(
-                            items.map(
-                                async item => {
-
-                                    try {
-
-                                        const response =
-                                            await productService
-                                                .getProductBySlug(
-                                                    item.slug
-                                                );
-
-
-                                        return (
-                                            response.data ||
-                                            null
-                                        );
-
-                                    } catch {
-
-                                        return null;
-
-                                    }
-
-                                }
-                            )
-                        );
-
-
-                    if (!active) {
-                        return;
-                    }
-
-
-                    syncProductAvailability(
-                        products.filter(
-                            Boolean
-                        )
-                    );
-
-                };
-
-
-            refreshAvailability();
-
-
-            return () => {
-                active =
-                    false;
-            };
-
-        },
-        [
-            hydrated,
-            items.length,
-            syncProductAvailability,
-        ]
-    );
+        const {
+    items,
+    hydrated,
+    itemCount,
+    subtotal,
+    updateQuantity,
+    removeItem,
+    replaceItems,
+    clearCart,
+} =
+    useCart();
 
 
     if (!hydrated) {
@@ -139,7 +63,7 @@ export default function CartPage() {
                     py-20
                     text-center
                     text-sm
-                    text-[#6B6862]
+                    text-slate-500
                     sm:px-6
                     lg:px-8
                 "
@@ -171,8 +95,8 @@ export default function CartPage() {
             <section
                 className="
                     border-b
-                    border-[#E7E0D5]
-                    bg-[#FAF6EE]
+                    border-slate-200
+                    bg-slate-50
                 "
             >
 
@@ -191,7 +115,7 @@ export default function CartPage() {
                         className="
                             text-sm
                             font-semibold
-                            text-[#6B6862]
+                            text-slate-500
                         "
                     >
                         متجر تكنو-واي
@@ -203,7 +127,7 @@ export default function CartPage() {
                             mt-2
                             text-3xl
                             font-black
-                            text-[#252525]
+                            text-slate-950
                         "
                     >
                         سلة التسوق
@@ -214,13 +138,13 @@ export default function CartPage() {
                         className="
                             mt-2
                             text-sm
-                            text-[#6B6862]
+                            text-slate-500
                         "
                     >
                         لديك{" "}
                         <strong
                             className="
-                                text-[#3C3935]
+                                text-slate-800
                             "
                         >
                             {itemCount}
@@ -260,8 +184,8 @@ export default function CartPage() {
                                 overflow-hidden
                                 rounded-2xl
                                 border
-                                border-[#E7E0D5]
-                                bg-[#FFFEFC]
+                                border-slate-200
+                                bg-white
                             "
                         >
 
@@ -272,7 +196,7 @@ export default function CartPage() {
                                     justify-between
                                     gap-4
                                     border-b
-                                    border-[#E7E0D5]
+                                    border-slate-200
                                     px-5
                                     py-4
                                 "
@@ -281,7 +205,7 @@ export default function CartPage() {
                                 <h2
                                     className="
                                         font-black
-                                        text-[#252525]
+                                        text-slate-900
                                     "
                                 >
                                     المنتجات
@@ -321,7 +245,7 @@ export default function CartPage() {
                             <div
                                 className="
                                     divide-y
-                                    divide-[#EFE9E0]
+                                    divide-slate-100
                                 "
                             >
 
@@ -353,6 +277,12 @@ export default function CartPage() {
                         </div>
 
 
+                        <BundleRecommendation
+                            items={items}
+                            replaceItems={replaceItems}
+                        />
+
+
                         <Link
                             href="/products"
                             className="
@@ -362,8 +292,8 @@ export default function CartPage() {
                                 gap-2
                                 text-sm
                                 font-bold
-                                text-[#56524D]
-                                hover:text-[#252525]
+                                text-slate-700
+                                hover:text-slate-950
                             "
                         >
                             <ArrowLeft
@@ -426,12 +356,6 @@ function CartItem({
         item.quantity;
 
 
-    const onlineAvailableQuantity =
-        getOnlineAvailableQuantity(
-            item
-        );
-
-
     return (
 
         <div
@@ -462,8 +386,8 @@ function CartItem({
                         overflow-hidden
                         rounded-xl
                         border
-                        border-[#E7E0D5]
-                        bg-[#FAF6EE]
+                        border-slate-200
+                        bg-slate-50
                         sm:h-28
                         sm:w-28
                     "
@@ -474,7 +398,7 @@ function CartItem({
                             ?.url
                             ? (
 
-                                <SafeImage
+                                <img
                                     src={
                                         item.image.url
                                     }
@@ -495,7 +419,7 @@ function CartItem({
                                 <ImageOff
                                     size={32}
                                     className="
-                                        text-[#B8B0A5]
+                                        text-slate-300
                                     "
                                 />
 
@@ -532,8 +456,8 @@ function CartItem({
                                     text-sm
                                     font-black
                                     leading-6
-                                    text-[#252525]
-                                    hover:text-[#6B6862]
+                                    text-slate-900
+                                    hover:text-slate-600
                                     sm:text-base
                                 "
                             >
@@ -545,7 +469,7 @@ function CartItem({
                                 className="
                                     mt-1
                                     text-xs
-                                    text-[#8A857D]
+                                    text-slate-400
                                 "
                             >
 
@@ -616,7 +540,7 @@ function CartItem({
                                 className="
                                     text-sm
                                     font-black
-                                    text-[#252525]
+                                    text-slate-950
                                 "
                             >
                                 {
@@ -635,7 +559,7 @@ function CartItem({
                                         className="
                                             mt-1
                                             text-xs
-                                            text-[#8A857D]
+                                            text-slate-400
                                             line-through
                                         "
                                     >
@@ -679,7 +603,7 @@ function CartItem({
                                     text-left
                                     text-sm
                                     font-black
-                                    text-[#252525]
+                                    text-slate-900
                                 "
                             >
                                 {
@@ -695,27 +619,7 @@ function CartItem({
 
 
                     {
-                        onlineAvailableQuantity <=
-                        0 &&
-                        (
-                            <div
-                                className="
-                                    mt-3
-                                    text-xs
-                                    font-semibold
-                                    text-red-700
-                                "
-                            >
-                                هذا المنتج غير متوفر أونلاين حاليًا. احذفه من السلة قبل إتمام الطلب.
-                            </div>
-                        )
-                    }
-
-
-                    {
-                        onlineAvailableQuantity >
-                        0 &&
-                        onlineAvailableQuantity <=
+                        item.stockQuantity <=
                         5 &&
                         (
 
@@ -729,7 +633,7 @@ function CartItem({
                             >
                                 المتاح حالياً:{" "}
                                 {
-                                    onlineAvailableQuantity
+                                    item.stockQuantity
                                 }
                             </div>
 
@@ -752,12 +656,6 @@ function QuantityControl({
     updateQuantity,
 }) {
 
-    const onlineAvailableQuantity =
-        getOnlineAvailableQuantity(
-            item
-        );
-
-
     return (
 
         <div
@@ -768,17 +666,15 @@ function QuantityControl({
                 overflow-hidden
                 rounded-xl
                 border
-                border-[#D9D0C4]
+                border-slate-300
             "
         >
 
             <button
                 type="button"
                 disabled={
-                    onlineAvailableQuantity <=
-                    0 ||
                     item.quantity >=
-                    onlineAvailableQuantity
+                    item.stockQuantity
                 }
                 onClick={
                     () =>
@@ -792,7 +688,7 @@ function QuantityControl({
                     h-full
                     w-10
                     font-bold
-                    hover:bg-[#FAF6EE]
+                    hover:bg-slate-50
                     disabled:opacity-30
                 "
             >
@@ -808,7 +704,7 @@ function QuantityControl({
                     items-center
                     justify-center
                     border-x
-                    border-[#E7E0D5]
+                    border-slate-200
                     px-2
                     text-sm
                     font-black
@@ -836,7 +732,7 @@ function QuantityControl({
                     h-full
                     w-10
                     font-bold
-                    hover:bg-[#FAF6EE]
+                    hover:bg-slate-50
                     disabled:opacity-30
                 "
             >
@@ -860,8 +756,8 @@ function OrderSummary({
             className="
                 rounded-2xl
                 border
-                border-[#E7E0D5]
-                bg-[#FFFEFC]
+                border-slate-200
+                bg-white
                 p-5
                 lg:sticky
                 lg:top-5
@@ -872,7 +768,7 @@ function OrderSummary({
                 className="
                     text-lg
                     font-black
-                    text-[#252525]
+                    text-slate-950
                 "
             >
                 ملخص الطلب
@@ -883,7 +779,7 @@ function OrderSummary({
                 className="
                     mt-5
                     divide-y
-                    divide-[#EFE9E0]
+                    divide-slate-100
                 "
             >
 
@@ -909,7 +805,7 @@ function OrderSummary({
                 className="
                     mt-4
                     border-t
-                    border-[#E7E0D5]
+                    border-slate-200
                     pt-4
                 "
             >
@@ -926,7 +822,7 @@ function OrderSummary({
                     <span
                         className="
                             font-bold
-                            text-[#3C3935]
+                            text-slate-800
                         "
                     >
                         الإجمالي الحالي
@@ -937,7 +833,7 @@ function OrderSummary({
                         className="
                             text-xl
                             font-black
-                            text-[#252525]
+                            text-slate-950
                         "
                     >
                         {
@@ -962,14 +858,14 @@ function OrderSummary({
                     justify-center
                     gap-2
                     rounded-xl
-                    bg-[#1F4E5F]
+                    bg-slate-950
                     px-5
                     py-3
                     text-sm
                     font-black
                     text-white
                     transition
-                    hover:bg-[#173C49]
+                    hover:bg-slate-800
                 "
             >
 
@@ -988,7 +884,7 @@ function OrderSummary({
                     text-center
                     text-[11px]
                     leading-5
-                    text-[#8A857D]
+                    text-slate-400
                 "
             >
                 الأسعار والمخزون يتم التحقق منهما
@@ -1022,7 +918,7 @@ function SummaryRow({
 
             <span
                 className="
-                    text-[#6B6862]
+                    text-slate-500
                 "
             >
                 {label}
@@ -1032,7 +928,7 @@ function SummaryRow({
             <span
                 className="
                     font-semibold
-                    text-[#3C3935]
+                    text-slate-800
                 "
             >
                 {value}
@@ -1066,8 +962,8 @@ function EmptyCart() {
                     max-w-xl
                     rounded-3xl
                     border
-                    border-[#E7E0D5]
-                    bg-[#FFFEFC]
+                    border-slate-200
+                    bg-white
                     px-6
                     py-14
                     text-center
@@ -1083,8 +979,8 @@ function EmptyCart() {
                         items-center
                         justify-center
                         rounded-2xl
-                        bg-[#F4EDE2]
-                        text-[#6B6862]
+                        bg-slate-100
+                        text-slate-500
                     "
                 >
                     <ShoppingBag
@@ -1098,10 +994,10 @@ function EmptyCart() {
                         mt-5
                         text-2xl
                         font-black
-                        text-[#252525]
+                        text-slate-950
                     "
                 >
-                    سلتك لسه فاضية
+                    سلة التسوق فارغة
                 </h1>
 
 
@@ -1110,10 +1006,11 @@ function EmptyCart() {
                         mt-3
                         text-sm
                         leading-7
-                        text-[#6B6862]
+                        text-slate-500
                     "
                 >
-                    دور على القطعة اللي محتاجها، ولو مش متأكد من الاختيار إحنا نساعدك.
+                    تصفح المنتجات واختر قطع الغيار
+                    التي تحتاجها.
                 </p>
 
 
@@ -1125,7 +1022,7 @@ function EmptyCart() {
                         items-center
                         gap-2
                         rounded-xl
-                        bg-[#1F4E5F]
+                        bg-slate-950
                         px-6
                         py-3
                         text-sm

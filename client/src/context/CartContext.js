@@ -10,9 +10,6 @@ import {
     useState,
 } from "react";
 
-import getOnlineAvailableQuantity from
-    "@/utils/getOnlineAvailableQuantity";
-
 
 const STORAGE_KEY =
     "technoy-cart-v1";
@@ -125,16 +122,9 @@ export function CartProvider({
                 quantity = 1
             ) => {
 
-                const onlineAvailableQuantity =
-                    getOnlineAvailableQuantity(
-                        product
-                    );
-
-
                 if (
                     !product ||
-                    onlineAvailableQuantity <=
-                    0
+                    product.stockQuantity <= 0
                 ) {
 
                     return {
@@ -178,7 +168,7 @@ export function CartProvider({
                                 Math.min(
                                     existing.quantity +
                                         requestedQuantity,
-                                    onlineAvailableQuantity
+                                    product.stockQuantity
                                 );
 
 
@@ -212,12 +202,6 @@ export function CartProvider({
                                             stockQuantity:
                                                 product.stockQuantity,
 
-                                            onlineSafetyStock:
-                                                product.onlineSafetyStock ??
-                                                0,
-
-                                            onlineAvailableQuantity,
-
                                             regularPrice:
                                                 product.regularPrice,
 
@@ -244,6 +228,11 @@ export function CartProvider({
                                             category:
                                                 product.category?.name ||
                                                 "",
+
+                                            isBundle:
+                                                Boolean(
+                                                    product.isBundle
+                                                ),
                                         }
                                         : item
                             );
@@ -288,16 +277,15 @@ export function CartProvider({
                                 stockQuantity:
                                     product.stockQuantity,
 
-                                onlineSafetyStock:
-                                    product.onlineSafetyStock ??
-                                    0,
-
-                                onlineAvailableQuantity,
-
                                 quantity:
                                     Math.min(
                                         requestedQuantity,
-                                        onlineAvailableQuantity
+                                        product.stockQuantity
+                                    ),
+
+                                isBundle:
+                                    Boolean(
+                                        product.isBundle
                                     ),
                             },
                         ];
@@ -345,118 +333,16 @@ export function CartProvider({
                                         Math.min(
                                             parsedQuantity ||
                                                 1,
-                                            getOnlineAvailableQuantity(
-                                                item
-                                            )
+                                            item.stockQuantity
                                         )
                                     );
 
 
                                 return {
                                     ...item,
+
                                     quantity:
                                         safeQuantity,
-                                };
-
-                            }
-                        )
-                );
-
-            },
-            []
-        );
-
-
-    const syncProductAvailability =
-        useCallback(
-            products => {
-
-                const productMap =
-                    new Map(
-                        (
-                            products ||
-                            []
-                        ).map(
-                            product => [
-                                product._id,
-                                product,
-                            ]
-                        )
-                    );
-
-
-                setItems(
-                    previous =>
-                        previous.map(
-                            item => {
-
-                                const product =
-                                    productMap.get(
-                                        item.productId
-                                    );
-
-
-                                if (!product) {
-                                    return item;
-                                }
-
-
-                                const onlineAvailableQuantity =
-                                    getOnlineAvailableQuantity(
-                                        product
-                                    );
-
-
-                                return {
-                                    ...item,
-
-                                    stockQuantity:
-                                        product.stockQuantity,
-
-                                    onlineSafetyStock:
-                                        product.onlineSafetyStock ??
-                                        0,
-
-                                    onlineAvailableQuantity,
-
-                                    quantity:
-                                        onlineAvailableQuantity >
-                                            0
-                                            ? Math.min(
-                                                item.quantity,
-                                                onlineAvailableQuantity
-                                            )
-                                            : item.quantity,
-
-                                    regularPrice:
-                                        product.regularPrice,
-
-                                    salePrice:
-                                        product.salePrice,
-
-                                    title:
-                                        product.title,
-
-                                    slug:
-                                        product.slug,
-
-                                    sku:
-                                        product.sku,
-
-                                    image:
-                                        product.images?.[0] ||
-                                        item.image ||
-                                        null,
-
-                                    brand:
-                                        product.brand?.name ||
-                                        item.brand ||
-                                        "",
-
-                                    category:
-                                        product.category?.name ||
-                                        item.category ||
-                                        "",
                                 };
 
                             }
@@ -486,12 +372,33 @@ export function CartProvider({
         );
 
 
+    const replaceItems =
+        useCallback(
+            nextItems => {
+
+                if (
+                    !Array.isArray(
+                        nextItems
+                    )
+                ) {
+                    return;
+                }
+
+
+                setItems(
+                    nextItems
+                );
+
+            },
+            []
+        );
+
+
     const clearCart =
         useCallback(
             () => {
 
                 setItems([]);
-
             },
             []
         );
@@ -577,9 +484,9 @@ export function CartProvider({
 
                 updateQuantity,
 
-                syncProductAvailability,
-
                 removeItem,
+
+                replaceItems,
 
                 clearCart,
 
@@ -591,8 +498,8 @@ export function CartProvider({
                 subtotal,
                 addItem,
                 updateQuantity,
-                syncProductAvailability,
                 removeItem,
+                replaceItems,
                 clearCart,
             ]
         );

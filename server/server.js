@@ -162,6 +162,12 @@ const promotionRoutes =
     );
 
 
+const notificationRoutes =
+    require(
+        "./routes/notificationRoutes"
+    );
+
+
 app.use(
     cors({
 
@@ -288,6 +294,12 @@ app.use(
 app.use(
     "/api/promotions",
     promotionRoutes
+);
+
+
+app.use(
+    "/api/notifications",
+    notificationRoutes
 );
 
 

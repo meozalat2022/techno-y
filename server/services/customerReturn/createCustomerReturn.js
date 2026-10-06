@@ -24,6 +24,10 @@ const validateReturn =
     require("./validateReturn");
 
 
+const notificationService =
+    require("../notification");
+
+
 const createCustomerReturn =
     async ({
         orderNumber,
@@ -194,7 +198,21 @@ const createCustomerReturn =
                 .commitTransaction();
 
 
-            return customerReturn;
+            const notificationReturn =
+                await customerReturn
+                    .populate(
+                        "customer",
+                        "firstName lastName email phone"
+                    );
+
+
+            await notificationService
+                .notifyCustomerReturnRequested(
+                    notificationReturn
+                );
+
+
+            return notificationReturn;
 
         } catch (error) {
 

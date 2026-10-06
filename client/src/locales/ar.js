@@ -43,14 +43,14 @@ const ar = {
 
         confirmDelete:
             "هل أنت متأكد من الحذف؟",
-            menu:
-    "القائمة",
+        menu:
+            "القائمة",
 
-closeMenu:
-    "إغلاق القائمة",
+        closeMenu:
+            "إغلاق القائمة",
 
-checkingAuthentication:
-    "جاري التحقق من تسجيل الدخول...",
+        checkingAuthentication:
+            "جاري التحقق من تسجيل الدخول...",
 
     },
 
@@ -162,8 +162,45 @@ checkingAuthentication:
 
         loadError:
             "تعذر تحميل بيانات لوحة التحكم.",
+        bundleAnalytics:
+            "تحليلات توصيات الباندل",
+
+        bundleAnalyticsDescription:
+            "قياس ظهور توصيات الباندل وقبولها ومبيعات الباندلات",
+
+        recommendationsShown:
+            "التوصيات المعروضة",
+
+        recommendationsAccepted:
+            "التوصيات المقبولة",
+
+        acceptanceRate:
+            "نسبة القبول",
+
+        bundleUnitsSold:
+            "وحدات الباندل المباعة",
+
+        bundleRevenue:
+            "مبيعات الباندلات",
+
+        topBundles:
+            "أفضل الباندلات مبيعاً",
+
+        bundleName:
+            "الباندل",
+
+        unitsSold:
+            "الوحدات المباعة",
+
+        revenue:
+            "المبيعات",
+
+        noBundleSales:
+            "لا توجد مبيعات باندلات حتى الآن.",
 
     },
+
+
 
 
     products: {
@@ -454,666 +491,666 @@ checkingAuthentication:
     },
     suppliers: {
 
-    title:
-        "الموردون",
+        title:
+            "الموردون",
 
-    description:
-        "إدارة بيانات الموردين ومعلومات التواصل",
+        description:
+            "إدارة بيانات الموردين ومعلومات التواصل",
 
-    addSupplier:
-        "إضافة مورد",
+        addSupplier:
+            "إضافة مورد",
 
-    editSupplier:
-        "تعديل المورد",
+        editSupplier:
+            "تعديل المورد",
 
-    supplierDetails:
-        "بيانات المورد",
+        supplierDetails:
+            "بيانات المورد",
 
-    searchPlaceholder:
-        "ابحث باسم المورد أو مسؤول التواصل أو الهاتف أو البريد",
+        searchPlaceholder:
+            "ابحث باسم المورد أو مسؤول التواصل أو الهاتف أو البريد",
 
-    name:
-        "اسم المورد",
+        name:
+            "اسم المورد",
 
-    contactPerson:
-        "مسؤول التواصل",
+        contactPerson:
+            "مسؤول التواصل",
 
-    phone:
-        "الهاتف",
+        phone:
+            "الهاتف",
 
-    email:
-        "البريد الإلكتروني",
+        email:
+            "البريد الإلكتروني",
 
-    address:
-        "العنوان",
+        address:
+            "العنوان",
 
-    notes:
-        "ملاحظات",
+        notes:
+            "ملاحظات",
 
-    actions:
-        "الإجراءات",
+        actions:
+            "الإجراءات",
 
-    createSuccess:
-        "تم إضافة المورد بنجاح.",
+        createSuccess:
+            "تم إضافة المورد بنجاح.",
 
-    updateSuccess:
-        "تم تعديل المورد بنجاح.",
+        updateSuccess:
+            "تم تعديل المورد بنجاح.",
 
-    deleteSuccess:
-        "تم حذف المورد بنجاح.",
+        deleteSuccess:
+            "تم حذف المورد بنجاح.",
 
-    loadError:
-        "تعذر تحميل الموردين.",
+        loadError:
+            "تعذر تحميل الموردين.",
 
-    saveError:
-        "تعذر حفظ بيانات المورد.",
+        saveError:
+            "تعذر حفظ بيانات المورد.",
 
-    deleteError:
-        "تعذر حذف المورد.",
+        deleteError:
+            "تعذر حذف المورد.",
 
-    noSuppliers:
-        "لا يوجد موردون مطابقون.",
+        noSuppliers:
+            "لا يوجد موردون مطابقون.",
 
-    deleteConfirm:
-        "هل أنت متأكد من حذف هذا المورد؟",
-
-},
-purchases: {
-
-    title:
-        "المشتريات",
-
-    description:
-        "إنشاء أوامر الشراء واعتمادها واستلام الأصناف من الموردين",
-
-    addPurchase:
-        "أمر شراء جديد",
-
-    purchaseDetails:
-        "تفاصيل أمر الشراء",
-
-    purchaseNumber:
-        "رقم أمر الشراء",
-
-    supplier:
-        "المورد",
-
-    status:
-        "الحالة",
-
-    total:
-        "الإجمالي",
-
-    createdAt:
-        "تاريخ الإنشاء",
-
-    receivedAt:
-        "تاريخ الاستلام",
-
-    actions:
-        "الإجراءات",
-
-    searchPlaceholder:
-        "ابحث برقم أمر الشراء",
-
-    allStatuses:
-        "كل الحالات",
-
-    allSuppliers:
-        "كل الموردين",
-
-    draft:
-        "مسودة",
-
-    ordered:
-        "تم الاعتماد",
-
-    partially_received:
-        "استلام جزئي",
-
-    received:
-        "تم الاستلام",
-
-    cancelled:
-        "ملغي",
-
-    product:
-        "المنتج",
-
-    sku:
-        "SKU",
-
-    quantity:
-        "الكمية المطلوبة",
-
-    receivedQuantity:
-        "الكمية المستلمة",
-
-    remainingQuantity:
-        "المتبقي",
-
-    returnedQuantity:
-        "المرتجع للمورد",
-
-    unitCost:
-        "تكلفة الوحدة",
-
-    lineTotal:
-        "الإجمالي",
-
-    subtotal:
-        "الإجمالي قبل الإضافات",
-
-    discount:
-        "الخصم",
-
-    shipping:
-        "الشحن",
-
-    submit:
-        "اعتماد أمر الشراء",
-
-    receive:
-        "استلام أصناف",
-
-    createSuccess:
-        "تم إنشاء أمر الشراء بنجاح.",
-
-    submitSuccess:
-        "تم اعتماد أمر الشراء بنجاح.",
-
-    receiveSuccess:
-        "تم تسجيل الاستلام بنجاح.",
-
-    loadError:
-        "تعذر تحميل أوامر الشراء.",
-
-    detailsError:
-        "تعذر تحميل تفاصيل أمر الشراء.",
-
-    createError:
-        "تعذر إنشاء أمر الشراء.",
-
-    submitError:
-        "تعذر اعتماد أمر الشراء.",
-
-    receiveError:
-        "تعذر تسجيل الاستلام.",
-
-    noPurchases:
-        "لا توجد أوامر شراء مطابقة.",
-
-    selectSupplier:
-        "اختر المورد",
-
-    selectProduct:
-        "اختر المنتج",
-
-    addItem:
-        "إضافة صنف",
-
-    removeItem:
-        "حذف الصنف",
-
-    noItems:
-        "يجب إضافة صنف واحد على الأقل.",
-
-    confirmSubmit:
-        "هل أنت متأكد من اعتماد أمر الشراء؟ بعد الاعتماد لن يكون في حالة مسودة.",
-
-    receiveTitle:
-        "استلام أمر الشراء",
-
-    receiveHint:
-        "أدخل فقط الكميات التي تم استلامها فعلياً الآن.",
-
-},
-orders: {
-
-    title:
-        "الطلبات",
-
-    description:
-        "متابعة طلبات العملاء وتحديث مراحل التجهيز والشحن والتسليم",
-
-    orderNumber:
-        "رقم الطلب",
-
-    customer:
-        "العميل",
-
-    phone:
-        "الهاتف",
-
-    status:
-        "الحالة",
-
-    total:
-        "الإجمالي",
-
-    date:
-        "التاريخ",
-
-    actions:
-        "الإجراءات",
-
-    searchPlaceholder:
-        "ابحث برقم الطلب أو اسم العميل أو الهاتف أو البريد",
-
-    allStatuses:
-        "كل الحالات",
-
-    pending:
-        "قيد الانتظار",
-
-    confirmed:
-        "تم التأكيد",
-
-    processing:
-        "جاري التجهيز",
-
-    packed:
-        "تم التجهيز",
-
-    shipped:
-        "تم الشحن",
-
-    delivered:
-        "تم التسليم",
-
-    cancelled:
-        "ملغي",
-
-    orderDetails:
-        "تفاصيل الطلب",
-
-    customerDetails:
-        "بيانات العميل",
-
-    shippingAddress:
-        "عنوان الشحن",
-
-    paymentDetails:
-        "بيانات الدفع",
-
-    shippingDetails:
-        "بيانات الشحن",
-
-    products:
-        "المنتجات",
-
-    product:
-        "المنتج",
-
-    sku:
-        "SKU",
-
-    quantity:
-        "الكمية",
-
-    returnedQuantity:
-        "الكمية المرتجعة",
-
-    unitPrice:
-        "سعر الوحدة",
-
-    lineTotal:
-        "الإجمالي",
-
-    subtotal:
-        "الإجمالي الفرعي",
-
-    discount:
-        "الخصم",
-
-    shipping:
-        "الشحن",
-
-    finalTotal:
-        "الإجمالي النهائي",
-
-    firstName:
-        "الاسم الأول",
-
-    lastName:
-        "اسم العائلة",
-
-    email:
-        "البريد الإلكتروني",
-
-    governorate:
-        "المحافظة",
-
-    city:
-        "المدينة",
-
-    address:
-        "العنوان",
-
-    landmark:
-        "علامة مميزة",
-
-    paymentMethod:
-        "طريقة الدفع",
-
-    paymentStatus:
-        "حالة الدفع",
-
-    shippingCompany:
-        "شركة الشحن",
-
-    shippingMethod:
-        "طريقة الشحن",
-
-    trackingNumber:
-        "رقم التتبع",
-
-    customerNotes:
-        "ملاحظات العميل",
-
-    adminNotes:
-        "ملاحظات الإدارة",
-
-    updateStatus:
-        "تحديث الحالة",
-
-    nextStatus:
-        "الحالة الجديدة",
-
-    confirmStatusChange:
-        "هل أنت متأكد من تغيير حالة الطلب؟",
-
-    cancelOrder:
-        "إلغاء الطلب",
-
-    cancelWarning:
-        "إلغاء الطلب سيعيد الكميات إلى المخزون تلقائياً.",
-
-    loadError:
-        "تعذر تحميل الطلبات.",
-
-    detailsError:
-        "تعذر تحميل تفاصيل الطلب.",
-
-    statusError:
-        "تعذر تحديث حالة الطلب.",
-
-    statusSuccess:
-        "تم تحديث حالة الطلب بنجاح.",
-
-    noOrders:
-        "لا توجد طلبات مطابقة.",
-
-    noFurtherActions:
-        "لا توجد إجراءات أخرى متاحة لهذا الطلب.",
-
-    paymentMethods: {
-
-        cod:
-            "الدفع عند الاستلام",
-
-        paymob:
-            "Paymob",
-
-        stripe:
-            "Stripe",
-
-        paypal:
-            "PayPal",
+        deleteConfirm:
+            "هل أنت متأكد من حذف هذا المورد؟",
 
     },
+    purchases: {
 
-    paymentStatuses: {
+        title:
+            "المشتريات",
+
+        description:
+            "إنشاء أوامر الشراء واعتمادها واستلام الأصناف من الموردين",
+
+        addPurchase:
+            "أمر شراء جديد",
+
+        purchaseDetails:
+            "تفاصيل أمر الشراء",
+
+        purchaseNumber:
+            "رقم أمر الشراء",
+
+        supplier:
+            "المورد",
+
+        status:
+            "الحالة",
+
+        total:
+            "الإجمالي",
+
+        createdAt:
+            "تاريخ الإنشاء",
+
+        receivedAt:
+            "تاريخ الاستلام",
+
+        actions:
+            "الإجراءات",
+
+        searchPlaceholder:
+            "ابحث برقم أمر الشراء",
+
+        allStatuses:
+            "كل الحالات",
+
+        allSuppliers:
+            "كل الموردين",
+
+        draft:
+            "مسودة",
+
+        ordered:
+            "تم الاعتماد",
+
+        partially_received:
+            "استلام جزئي",
+
+        received:
+            "تم الاستلام",
+
+        cancelled:
+            "ملغي",
+
+        product:
+            "المنتج",
+
+        sku:
+            "SKU",
+
+        quantity:
+            "الكمية المطلوبة",
+
+        receivedQuantity:
+            "الكمية المستلمة",
+
+        remainingQuantity:
+            "المتبقي",
+
+        returnedQuantity:
+            "المرتجع للمورد",
+
+        unitCost:
+            "تكلفة الوحدة",
+
+        lineTotal:
+            "الإجمالي",
+
+        subtotal:
+            "الإجمالي قبل الإضافات",
+
+        discount:
+            "الخصم",
+
+        shipping:
+            "الشحن",
+
+        submit:
+            "اعتماد أمر الشراء",
+
+        receive:
+            "استلام أصناف",
+
+        createSuccess:
+            "تم إنشاء أمر الشراء بنجاح.",
+
+        submitSuccess:
+            "تم اعتماد أمر الشراء بنجاح.",
+
+        receiveSuccess:
+            "تم تسجيل الاستلام بنجاح.",
+
+        loadError:
+            "تعذر تحميل أوامر الشراء.",
+
+        detailsError:
+            "تعذر تحميل تفاصيل أمر الشراء.",
+
+        createError:
+            "تعذر إنشاء أمر الشراء.",
+
+        submitError:
+            "تعذر اعتماد أمر الشراء.",
+
+        receiveError:
+            "تعذر تسجيل الاستلام.",
+
+        noPurchases:
+            "لا توجد أوامر شراء مطابقة.",
+
+        selectSupplier:
+            "اختر المورد",
+
+        selectProduct:
+            "اختر المنتج",
+
+        addItem:
+            "إضافة صنف",
+
+        removeItem:
+            "حذف الصنف",
+
+        noItems:
+            "يجب إضافة صنف واحد على الأقل.",
+
+        confirmSubmit:
+            "هل أنت متأكد من اعتماد أمر الشراء؟ بعد الاعتماد لن يكون في حالة مسودة.",
+
+        receiveTitle:
+            "استلام أمر الشراء",
+
+        receiveHint:
+            "أدخل فقط الكميات التي تم استلامها فعلياً الآن.",
+
+    },
+    orders: {
+
+        title:
+            "الطلبات",
+
+        description:
+            "متابعة طلبات العملاء وتحديث مراحل التجهيز والشحن والتسليم",
+
+        orderNumber:
+            "رقم الطلب",
+
+        customer:
+            "العميل",
+
+        phone:
+            "الهاتف",
+
+        status:
+            "الحالة",
+
+        total:
+            "الإجمالي",
+
+        date:
+            "التاريخ",
+
+        actions:
+            "الإجراءات",
+
+        searchPlaceholder:
+            "ابحث برقم الطلب أو اسم العميل أو الهاتف أو البريد",
+
+        allStatuses:
+            "كل الحالات",
 
         pending:
-            "في انتظار الدفع",
+            "قيد الانتظار",
 
-        paid:
-            "مدفوع",
+        confirmed:
+            "تم التأكيد",
 
-        failed:
-            "فشل الدفع",
+        processing:
+            "جاري التجهيز",
 
-        refunded:
-            "تم رد المبلغ",
+        packed:
+            "تم التجهيز",
+
+        shipped:
+            "تم الشحن",
+
+        delivered:
+            "تم التسليم",
+
+        cancelled:
+            "ملغي",
+
+        orderDetails:
+            "تفاصيل الطلب",
+
+        customerDetails:
+            "بيانات العميل",
+
+        shippingAddress:
+            "عنوان الشحن",
+
+        paymentDetails:
+            "بيانات الدفع",
+
+        shippingDetails:
+            "بيانات الشحن",
+
+        products:
+            "المنتجات",
+
+        product:
+            "المنتج",
+
+        sku:
+            "SKU",
+
+        quantity:
+            "الكمية",
+
+        returnedQuantity:
+            "الكمية المرتجعة",
+
+        unitPrice:
+            "سعر الوحدة",
+
+        lineTotal:
+            "الإجمالي",
+
+        subtotal:
+            "الإجمالي الفرعي",
+
+        discount:
+            "الخصم",
+
+        shipping:
+            "الشحن",
+
+        finalTotal:
+            "الإجمالي النهائي",
+
+        firstName:
+            "الاسم الأول",
+
+        lastName:
+            "اسم العائلة",
+
+        email:
+            "البريد الإلكتروني",
+
+        governorate:
+            "المحافظة",
+
+        city:
+            "المدينة",
+
+        address:
+            "العنوان",
+
+        landmark:
+            "علامة مميزة",
+
+        paymentMethod:
+            "طريقة الدفع",
+
+        paymentStatus:
+            "حالة الدفع",
+
+        shippingCompany:
+            "شركة الشحن",
+
+        shippingMethod:
+            "طريقة الشحن",
+
+        trackingNumber:
+            "رقم التتبع",
+
+        customerNotes:
+            "ملاحظات العميل",
+
+        adminNotes:
+            "ملاحظات الإدارة",
+
+        updateStatus:
+            "تحديث الحالة",
+
+        nextStatus:
+            "الحالة الجديدة",
+
+        confirmStatusChange:
+            "هل أنت متأكد من تغيير حالة الطلب؟",
+
+        cancelOrder:
+            "إلغاء الطلب",
+
+        cancelWarning:
+            "إلغاء الطلب سيعيد الكميات إلى المخزون تلقائياً.",
+
+        loadError:
+            "تعذر تحميل الطلبات.",
+
+        detailsError:
+            "تعذر تحميل تفاصيل الطلب.",
+
+        statusError:
+            "تعذر تحديث حالة الطلب.",
+
+        statusSuccess:
+            "تم تحديث حالة الطلب بنجاح.",
+
+        noOrders:
+            "لا توجد طلبات مطابقة.",
+
+        noFurtherActions:
+            "لا توجد إجراءات أخرى متاحة لهذا الطلب.",
+
+        paymentMethods: {
+
+            cod:
+                "الدفع عند الاستلام",
+
+            paymob:
+                "Paymob",
+
+            stripe:
+                "Stripe",
+
+            paypal:
+                "PayPal",
+
+        },
+
+        paymentStatuses: {
+
+            pending:
+                "في انتظار الدفع",
+
+            paid:
+                "مدفوع",
+
+            failed:
+                "فشل الدفع",
+
+            refunded:
+                "تم رد المبلغ",
+
+        },
 
     },
+    customerReturns: {
 
-},
-customerReturns: {
+        title:
+            "مرتجعات العملاء",
 
-    title:
-        "مرتجعات العملاء",
+        description:
+            "متابعة طلبات المرتجعات واستلام المنتجات المرتجعة من العملاء",
 
-    description:
-        "متابعة طلبات المرتجعات واستلام المنتجات المرتجعة من العملاء",
+        returnNumber:
+            "رقم المرتجع",
 
-    returnNumber:
-        "رقم المرتجع",
+        orderNumber:
+            "رقم الطلب",
 
-    orderNumber:
-        "رقم الطلب",
+        customer:
+            "العميل",
 
-    customer:
-        "العميل",
+        status:
+            "الحالة",
 
-    status:
-        "الحالة",
+        reason:
+            "سبب المرتجع",
 
-    reason:
-        "سبب المرتجع",
+        date:
+            "التاريخ",
 
-    date:
-        "التاريخ",
+        actions:
+            "الإجراءات",
 
-    actions:
-        "الإجراءات",
+        searchPlaceholder:
+            "ابحث برقم الطلب",
 
-    searchPlaceholder:
-        "ابحث برقم الطلب",
+        allStatuses:
+            "كل الحالات",
 
-    allStatuses:
-        "كل الحالات",
+        requested:
+            "قيد الطلب",
 
-    requested:
-        "قيد الطلب",
+        received:
+            "تم الاستلام",
 
-    received:
-        "تم الاستلام",
+        rejected:
+            "مرفوض",
 
-    rejected:
-        "مرفوض",
+        returnDetails:
+            "تفاصيل المرتجع",
 
-    returnDetails:
-        "تفاصيل المرتجع",
+        customerDetails:
+            "بيانات العميل",
 
-    customerDetails:
-        "بيانات العميل",
+        products:
+            "المنتجات المرتجعة",
 
-    products:
-        "المنتجات المرتجعة",
+        product:
+            "المنتج",
 
-    product:
-        "المنتج",
+        sku:
+            "SKU",
 
-    sku:
-        "SKU",
+        quantity:
+            "الكمية المرتجعة",
 
-    quantity:
-        "الكمية المرتجعة",
+        unitPrice:
+            "سعر الوحدة",
 
-    unitPrice:
-        "سعر الوحدة",
+        lineTotal:
+            "الإجمالي",
 
-    lineTotal:
-        "الإجمالي",
+        notes:
+            "ملاحظات",
 
-    notes:
-        "ملاحظات",
+        requestedAt:
+            "تاريخ طلب المرتجع",
 
-    requestedAt:
-        "تاريخ طلب المرتجع",
+        receivedAt:
+            "تاريخ الاستلام",
 
-    receivedAt:
-        "تاريخ الاستلام",
+        receivedBy:
+            "تم الاستلام بواسطة",
 
-    receivedBy:
-        "تم الاستلام بواسطة",
+        receive:
+            "استلام المرتجع",
 
-    receive:
-        "استلام المرتجع",
+        reject:
+            "رفض المرتجع",
 
-    reject:
-        "رفض المرتجع",
+        confirmReceive:
+            "هل أنت متأكد من استلام هذا المرتجع؟ سيتم إضافة الكميات إلى المخزون تلقائياً.",
 
-    confirmReceive:
-        "هل أنت متأكد من استلام هذا المرتجع؟ سيتم إضافة الكميات إلى المخزون تلقائياً.",
+        confirmReject:
+            "هل أنت متأكد من رفض طلب المرتجع؟",
 
-    confirmReject:
-        "هل أنت متأكد من رفض طلب المرتجع؟",
+        receiveSuccess:
+            "تم استلام المرتجع بنجاح.",
 
-    receiveSuccess:
-        "تم استلام المرتجع بنجاح.",
+        rejectSuccess:
+            "تم رفض المرتجع بنجاح.",
 
-    rejectSuccess:
-        "تم رفض المرتجع بنجاح.",
+        loadError:
+            "تعذر تحميل مرتجعات العملاء.",
 
-    loadError:
-        "تعذر تحميل مرتجعات العملاء.",
+        detailsError:
+            "تعذر تحميل تفاصيل المرتجع.",
 
-    detailsError:
-        "تعذر تحميل تفاصيل المرتجع.",
+        receiveError:
+            "تعذر استلام المرتجع.",
 
-    receiveError:
-        "تعذر استلام المرتجع.",
+        rejectError:
+            "تعذر رفض المرتجع.",
 
-    rejectError:
-        "تعذر رفض المرتجع.",
+        noReturns:
+            "لا توجد مرتجعات عملاء مطابقة.",
 
-    noReturns:
-        "لا توجد مرتجعات عملاء مطابقة.",
+        noActions:
+            "لا توجد إجراءات متاحة لهذا المرتجع.",
 
-    noActions:
-        "لا توجد إجراءات متاحة لهذا المرتجع.",
+    },
+    supplierReturns: {
 
-},
-supplierReturns: {
+        title:
+            "مرتجعات الموردين",
 
-    title:
-        "مرتجعات الموردين",
+        description:
+            "متابعة الأصناف المرتجعة للموردين وإرسالها وتسجيل تأثيرها على المخزون",
 
-    description:
-        "متابعة الأصناف المرتجعة للموردين وإرسالها وتسجيل تأثيرها على المخزون",
+        returnNumber:
+            "رقم المرتجع",
 
-    returnNumber:
-        "رقم المرتجع",
+        purchaseNumber:
+            "رقم أمر الشراء",
 
-    purchaseNumber:
-        "رقم أمر الشراء",
+        supplier:
+            "المورد",
 
-    supplier:
-        "المورد",
+        status:
+            "الحالة",
 
-    status:
-        "الحالة",
+        reason:
+            "سبب المرتجع",
 
-    reason:
-        "سبب المرتجع",
+        date:
+            "التاريخ",
 
-    date:
-        "التاريخ",
+        actions:
+            "الإجراءات",
 
-    actions:
-        "الإجراءات",
+        searchPlaceholder:
+            "ابحث برقم أمر الشراء",
 
-    searchPlaceholder:
-        "ابحث برقم أمر الشراء",
+        allStatuses:
+            "كل الحالات",
 
-    allStatuses:
-        "كل الحالات",
+        allSuppliers:
+            "كل الموردين",
 
-    allSuppliers:
-        "كل الموردين",
+        requested:
+            "قيد الطلب",
 
-    requested:
-        "قيد الطلب",
+        sent:
+            "تم الإرسال",
 
-    sent:
-        "تم الإرسال",
+        rejected:
+            "مرفوض",
 
-    rejected:
-        "مرفوض",
+        returnDetails:
+            "تفاصيل مرتجع المورد",
 
-    returnDetails:
-        "تفاصيل مرتجع المورد",
+        products:
+            "الأصناف المرتجعة",
 
-    products:
-        "الأصناف المرتجعة",
+        product:
+            "المنتج",
 
-    product:
-        "المنتج",
+        sku:
+            "SKU",
 
-    sku:
-        "SKU",
+        quantity:
+            "الكمية المرتجعة",
 
-    quantity:
-        "الكمية المرتجعة",
+        unitCost:
+            "تكلفة الوحدة",
 
-    unitCost:
-        "تكلفة الوحدة",
+        lineTotal:
+            "الإجمالي",
 
-    lineTotal:
-        "الإجمالي",
+        notes:
+            "ملاحظات",
 
-    notes:
-        "ملاحظات",
+        requestedAt:
+            "تاريخ إنشاء المرتجع",
 
-    requestedAt:
-        "تاريخ إنشاء المرتجع",
+        sentAt:
+            "تاريخ الإرسال",
 
-    sentAt:
-        "تاريخ الإرسال",
+        createdBy:
+            "تم الإنشاء بواسطة",
 
-    createdBy:
-        "تم الإنشاء بواسطة",
+        sentBy:
+            "تم الإرسال بواسطة",
 
-    sentBy:
-        "تم الإرسال بواسطة",
+        send:
+            "إرسال المرتجع",
 
-    send:
-        "إرسال المرتجع",
+        reject:
+            "رفض المرتجع",
 
-    reject:
-        "رفض المرتجع",
+        confirmSend:
+            "هل أنت متأكد من إرسال هذا المرتجع للمورد؟ سيتم خصم الكميات من المخزون تلقائياً.",
 
-    confirmSend:
-        "هل أنت متأكد من إرسال هذا المرتجع للمورد؟ سيتم خصم الكميات من المخزون تلقائياً.",
+        confirmReject:
+            "هل أنت متأكد من رفض مرتجع المورد؟",
 
-    confirmReject:
-        "هل أنت متأكد من رفض مرتجع المورد؟",
+        sendSuccess:
+            "تم إرسال المرتجع للمورد بنجاح.",
 
-    sendSuccess:
-        "تم إرسال المرتجع للمورد بنجاح.",
+        rejectSuccess:
+            "تم رفض المرتجع بنجاح.",
 
-    rejectSuccess:
-        "تم رفض المرتجع بنجاح.",
+        loadError:
+            "تعذر تحميل مرتجعات الموردين.",
 
-    loadError:
-        "تعذر تحميل مرتجعات الموردين.",
+        detailsError:
+            "تعذر تحميل تفاصيل مرتجع المورد.",
 
-    detailsError:
-        "تعذر تحميل تفاصيل مرتجع المورد.",
+        sendError:
+            "تعذر إرسال المرتجع للمورد.",
 
-    sendError:
-        "تعذر إرسال المرتجع للمورد.",
+        rejectError:
+            "تعذر رفض المرتجع.",
 
-    rejectError:
-        "تعذر رفض المرتجع.",
+        noReturns:
+            "لا توجد مرتجعات موردين مطابقة.",
 
-    noReturns:
-        "لا توجد مرتجعات موردين مطابقة.",
-
-},
+    },
 
 };
 

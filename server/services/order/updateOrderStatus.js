@@ -48,6 +48,10 @@ const REFERENCE_TYPES =
     );
 
 
+const notificationService =
+    require("../notification");
+
+
 
 const applyPaymentPatch = (
     order,
@@ -464,6 +468,19 @@ const updateOrderStatus = async ({
 
             }
         );
+
+
+        if (
+            updatedOrder?.status ===
+            ORDER_STATUS.CANCELLED
+        ) {
+
+            await notificationService
+                .notifyOrderCancelled(
+                    updatedOrder
+                );
+
+        }
 
 
         return updatedOrder;

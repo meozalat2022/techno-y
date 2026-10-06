@@ -1,32 +1,21 @@
-const mongoose =
-    require("mongoose");
 
-const validateRequest =
-    require("./validateRequest");
+const mongoose = require("mongoose");
 
-const validateProducts =
-    require("./validateProducts");
+const validateRequest = require("./validateRequest");
+const validateProducts = require("./validateProducts");
+const buildOrderItems = require("./buildOrderItems");
+const calculateTotals = require("./calculateTotals");
+const generateOrderNumber = require("./generateOrderNumber");
+const saveOrder = require("./saveOrder");
+const updateInventory = require("./updateInventory");
 
-const buildOrderItems =
-    require("./buildOrderItems");
+const loyaltyService = require("../loyalty");
+const promotionService = require("../promotion");
+const notificationService = require("../notification");
 
-const calculateTotals =
-    require("./calculateTotals");
-
-const generateOrderNumber =
-    require("./generateOrderNumber");
-
-const saveOrder =
-    require("./saveOrder");
-
-const updateInventory =
-    require("./updateInventory");
-
-const loyaltyService =
-    require("../loyalty");
-
-const promotionService =
-    require("../promotion");
+const trackBundleRecommendationEvent = require(
+    "../product/trackBundleRecommendationEvent"
+);
 
 
 const createOrder = async ({
@@ -37,6 +26,10 @@ const createOrder = async ({
     loyaltyPointsToRedeem = 0,
     promoCode = "",
     user,
+
+    // Optional bundle recommendation context.
+    // This is used only for analytics.
+    bundleRecommendation = null,
 }) => {
 
     const session =
@@ -48,6 +41,10 @@ const createOrder = async ({
         session.startTransaction();
 
 
+        // --------------------------------------------------
+        // 1. Validate request
+        // --------------------------------------------------
+
         validateRequest({
             customer,
             items,
@@ -56,11 +53,19 @@ const createOrder = async ({
         });
 
 
+        // --------------------------------------------------
+        // 2. Validate products
+        // --------------------------------------------------
+
         const products =
             await validateProducts({
                 items,
             });
 
+
+        // --------------------------------------------------
+        // 3. Build order items
+        // --------------------------------------------------
 
         const orderItems =
             buildOrderItems({
@@ -69,17 +74,29 @@ const createOrder = async ({
             });
 
 
+        // --------------------------------------------------
+        // 4. Calculate base totals
+        // --------------------------------------------------
+
         const baseTotals =
             calculateTotals({
                 orderItems,
             });
 
 
+        // --------------------------------------------------
+        // 5. Generate order number
+        // --------------------------------------------------
+
         const orderNumber =
             await generateOrderNumber(
                 session
             );
 
+
+        // --------------------------------------------------
+        // 6. Promotion
+        // --------------------------------------------------
 
         let promotionResult = {
             promotion: null,
@@ -88,21 +105,35 @@ const createOrder = async ({
         };
 
 
-        if (String(promoCode || "").trim()) {
+        if (
+            String(
+                promoCode || ""
+            ).trim()
+        ) {
 
             promotionResult =
                 await promotionService
                     .validateForCheckout({
-                        code: promoCode,
-                        subtotal: baseTotals.subtotal,
+                        code:
+                            promoCode,
+
+                        subtotal:
+                            baseTotals.subtotal,
+
                         session,
                     });
 
-            promotionResult.discount =
-                promotionResult.preview.discount;
 
+            promotionResult.discount =
+                promotionResult
+                    .preview
+                    .discount;
         }
 
+
+        // --------------------------------------------------
+        // 7. Calculate subtotal after promotion
+        // --------------------------------------------------
 
         const subtotalAfterPromotion =
             Math.max(
@@ -115,11 +146,10 @@ const createOrder = async ({
             );
 
 
-        /*
-         * Loyalty is calculated after the promotion discount.
-         * Both reservations happen inside the same transaction
-         * as order creation + inventory reservation.
-         */
+        // --------------------------------------------------
+        // 8. Loyalty points
+        // --------------------------------------------------
+
         const loyaltyResult =
             await loyaltyService
                 .applyOrderCreation({
@@ -136,9 +166,12 @@ const createOrder = async ({
                         loyaltyPointsToRedeem,
 
                     session,
-
                 });
 
+
+        // --------------------------------------------------
+        // 9. Calculate final totals
+        // --------------------------------------------------
 
         const combinedDiscount =
             Number(
@@ -153,14 +186,16 @@ const createOrder = async ({
 
         const totals =
             calculateTotals({
-
                 orderItems,
 
                 discount:
                     combinedDiscount,
-
             });
 
+
+        // --------------------------------------------------
+        // 10. Save order
+        // --------------------------------------------------
 
         const order =
             await saveOrder({
@@ -182,28 +217,34 @@ const createOrder = async ({
                         .loyalty,
 
                 promotion:
-                    promotionResult.promotion
-                        ? {
-                            code:
-                                promotionResult
-                                    .promotion
-                                    .code,
-                            discountPercent:
-                                promotionResult
-                                    .promotion
-                                    .discountPercent,
-                            discountAmount:
-                                promotionResult
-                                    .discount,
-                        }
-                        : undefined,
+                    promotionResult
+                        .promotion
+                    ? {
+                        code:
+                            promotionResult
+                                .promotion
+                                .code,
+
+                        discountPercent:
+                            promotionResult
+                                .promotion
+                                .discountPercent,
+
+                        discountAmount:
+                            promotionResult
+                                .discount,
+                    }
+                    : undefined,
 
                 user,
 
                 session,
-
             });
 
+
+        // --------------------------------------------------
+        // 11. Update inventory
+        // --------------------------------------------------
 
         await updateInventory({
 
@@ -214,18 +255,128 @@ const createOrder = async ({
             user,
 
             session,
-
         });
 
 
-        await session
-            .commitTransaction();
+        // --------------------------------------------------
+        // 12. Commit transaction
+        // --------------------------------------------------
 
+        await session.commitTransaction();
+
+
+        // ==================================================
+        // 13. BUNDLE RECOMMENDATION PURCHASE ANALYTICS
+        // ==================================================
+        //
+        // IMPORTANT:
+        //
+        // We only record "purchased" AFTER the order has
+        // successfully committed.
+        //
+        // We also verify that the actual order contains
+        // the bundle. We do NOT blindly trust the frontend.
+        //
+        // If analytics fails, the customer's order remains
+        // successful.
+        // ==================================================
+
+        if (
+            bundleRecommendation &&
+            bundleRecommendation.bundleId
+        ) {
+
+            try {
+
+                const requestedBundleId =
+                    String(
+                        bundleRecommendation
+                            .bundleId
+                    );
+
+
+                const purchasedBundle =
+                    order.orderItems?.find(
+                        item =>
+                            item.isBundle ===
+                                true &&
+                            String(
+                                item.product
+                            ) ===
+                                requestedBundleId
+                    );
+
+
+                if (
+                    purchasedBundle
+                ) {
+
+                    await trackBundleRecommendationEvent({
+
+                        eventType:
+                            "purchased",
+
+                        bundleId:
+                            requestedBundleId,
+
+                        recommendationType:
+                            bundleRecommendation
+                                .recommendationType ===
+                            "exact"
+                                ? "exact"
+                                : "partial",
+
+                        sessionId:
+                            bundleRecommendation
+                                .sessionId ||
+                            "",
+
+                        cartFingerprint:
+                            bundleRecommendation
+                                .cartFingerprint ||
+                            "",
+
+                        orderId:
+                            order._id,
+                    });
+                }
+
+            } catch (
+                analyticsError
+            ) {
+
+                /*
+                 * Never let an analytics problem
+                 * invalidate a successful order.
+                 */
+                console.error(
+                    "Bundle recommendation purchase analytics failed:",
+                    analyticsError
+                );
+            }
+        }
+
+
+        // --------------------------------------------------
+        // 14. Send order-created notification
+        // --------------------------------------------------
+
+        await notificationService
+            .notifyOrderCreated(
+                order
+            );
+
+
+        // --------------------------------------------------
+        // 15. Return successful order
+        // --------------------------------------------------
 
         return order;
 
 
-    } catch (error) {
+    } catch (
+        error
+    ) {
 
         if (
             session.inTransaction()
@@ -233,7 +384,6 @@ const createOrder = async ({
 
             await session
                 .abortTransaction();
-
         }
 
 
@@ -242,11 +392,8 @@ const createOrder = async ({
 
     } finally {
 
-        await session
-            .endSession();
-
+        await session.endSession();
     }
-
 };
 
 
