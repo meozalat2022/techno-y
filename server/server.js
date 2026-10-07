@@ -155,7 +155,10 @@ const loyaltyRoutes =
         "./routes/loyaltyRoutes"
     );
 
-
+const wishlistRoutes =
+    require(
+        "./routes/wishlistRoutes"
+    );
 const promotionRoutes =
     require(
         "./routes/promotionRoutes"
@@ -288,6 +291,11 @@ app.use(
 app.use(
     "/api/loyalty",
     loyaltyRoutes
+);
+
+app.use(
+    "/api/wishlist",
+    wishlistRoutes
 );
 
 

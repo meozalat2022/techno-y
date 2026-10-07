@@ -12,7 +12,9 @@ import {
     AuthProvider,
 } from "@/context/AuthContext";
 
-
+import {
+    ToastProvider,
+} from "@/context/ToastContext";
 export default function StoreLayout({
     children,
 }) {
@@ -22,7 +24,7 @@ export default function StoreLayout({
         <AuthProvider>
 
             <CartProvider>
-
+ <ToastProvider>
                 <div
                     className="
                         flex
@@ -41,7 +43,7 @@ export default function StoreLayout({
                     <StoreFooter />
 
                 </div>
-
+</ToastProvider>
             </CartProvider>
 
         </AuthProvider>

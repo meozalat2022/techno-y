@@ -13,6 +13,7 @@ import {
     Search,
     ShoppingCart,
     UserRound,
+    Heart,
     X,
     Headphones,
 } from "lucide-react";
@@ -59,6 +60,7 @@ export default function StoreHeader() {
     const {
         user,
         loading: authLoading,
+        wishlistCount,
     } =
         useAuth();
 
@@ -401,7 +403,13 @@ export default function StoreHeader() {
                                     }
                                 </span>
                             </Link>
-
+                            <WishlistLink
+                                wishlistCount={
+                                    user
+                                        ? wishlistCount
+                                        : 0
+                                }
+                            />
 
                             <CartLink
                                 itemCount={
@@ -576,6 +584,11 @@ export default function StoreHeader() {
                                 ? itemCount
                                 : 0
                         }
+                        wishlistCount={
+                            user
+                                ? wishlistCount
+                                : 0
+                        }
                         user={user}
                         authLoading={
                             authLoading
@@ -686,9 +699,99 @@ function CartLink({
 
 }
 
+function WishlistLink({
+    wishlistCount,
+}) {
+
+    return (
+
+        <Link
+            href="/wishlist"
+            aria-label="قائمة المفضلة"
+            className="
+                relative
+                flex
+                h-11
+                items-center
+                gap-2
+                rounded-xl
+                px-2.5
+                text-[#6B6862]
+                transition
+                hover:bg-[#FAF6EE]
+                sm:px-3
+            "
+        >
+
+            <span
+                className="
+                    relative
+                "
+            >
+
+                <Heart
+                    size={22}
+                />
+
+
+                {
+                    wishlistCount >
+                    0 &&
+                    (
+
+                        <span
+                            className="
+                                absolute
+                                -left-2
+                                -top-2
+                                flex
+                                h-5
+                                min-w-5
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-[#C94A45]
+                                px-1
+                                text-[10px]
+                                font-bold
+                                text-white
+                            "
+                        >
+                            {
+                                wishlistCount >
+                                    99
+                                    ? "99+"
+                                    : wishlistCount
+                            }
+                        </span>
+
+                    )
+                }
+
+            </span>
+
+
+            <span
+                className="
+                    hidden
+                    text-sm
+                    font-medium
+                    md:inline
+                "
+            >
+                المفضلة
+            </span>
+
+        </Link>
+
+    );
+
+}
+
 
 function MobileMenu({
     itemCount,
+    wishlistCount,
     user,
     authLoading,
     onClose,
@@ -872,7 +975,70 @@ function MobileMenu({
                                 : "حسابي"
                         }
                     </Link>
+                    <Link
+                        href="/wishlist"
+                        onClick={onClose}
+                        className="
+        flex
+        items-center
+        justify-between
+        gap-3
+        rounded-xl
+        px-4
+        py-3
+        text-sm
+        font-medium
+        text-[#6B6862]
+        hover:bg-[#FAF6EE]
+    "
+                    >
 
+                        <span
+                            className="
+            flex
+            items-center
+            gap-3
+        "
+                        >
+
+                            <Heart
+                                size={19}
+                            />
+
+                            قائمة المفضلة
+
+                        </span>
+
+
+                        {
+                            user &&
+                            wishlistCount >
+                            0 &&
+                            (
+
+                                <span
+                                    className="
+                    rounded-full
+                    bg-[#C94A45]
+                    px-2
+                    py-0.5
+                    text-xs
+                    font-bold
+                    text-white
+                "
+                                >
+                                    {
+                                        wishlistCount >
+                                            99
+                                            ? "99+"
+                                            : wishlistCount
+                                    }
+                                </span>
+
+                            )
+                        }
+
+                    </Link>
 
                     <Link
                         href="/cart"

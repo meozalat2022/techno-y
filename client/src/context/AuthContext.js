@@ -13,6 +13,9 @@ import {
 import authService from
     "@/services/authService";
 
+import wishlistService from
+    "@/services/wishlistService";
+
 
 const AuthContext =
     createContext(null);
@@ -34,6 +37,71 @@ export function AuthProvider({
         setLoading,
     ] =
         useState(true);
+
+
+    const [
+        wishlist,
+        setWishlist,
+    ] =
+        useState([]);
+
+
+    const [
+        wishlistLoading,
+        setWishlistLoading,
+    ] =
+        useState(false);
+
+
+    const refreshWishlist =
+        useCallback(
+            async () => {
+
+                setWishlistLoading(
+                    true
+                );
+
+                try {
+
+                    const response =
+                        await wishlistService
+                            .getWishlist();
+
+
+                    const products =
+                        Array.isArray(
+                            response.data
+                        )
+                            ? response.data
+                            : [];
+
+
+                    setWishlist(
+                        products
+                    );
+
+
+                    return products;
+
+
+                } catch {
+
+                    setWishlist([]);
+
+                    return [];
+
+
+                } finally {
+
+                    setWishlistLoading(
+                        false
+                    );
+
+                }
+
+            },
+            []
+        );
 
 
     const refreshUser =
@@ -59,6 +127,8 @@ export function AuthProvider({
 
                     setUser(null);
 
+                    setWishlist([]);
+
                     return null;
 
 
@@ -81,6 +151,27 @@ export function AuthProvider({
         },
         [
             refreshUser,
+        ]
+    );
+
+
+    useEffect(
+        () => {
+
+            if (user) {
+
+                refreshWishlist();
+
+            } else {
+
+                setWishlist([]);
+
+            }
+
+        },
+        [
+            user,
+            refreshWishlist,
         ]
     );
 
@@ -144,10 +235,80 @@ export function AuthProvider({
 
                     setUser(null);
 
+                    setWishlist([]);
+
                 }
 
             },
             []
+        );
+
+
+    const addWishlistItem =
+        useCallback(
+            async productId => {
+
+                const response =
+                    await wishlistService
+                        .addToWishlist(
+                            productId
+                        );
+
+
+                await refreshWishlist();
+
+
+                return response.data;
+
+            },
+            [
+                refreshWishlist,
+            ]
+        );
+
+
+    const removeWishlistItem =
+        useCallback(
+            async productId => {
+
+                const response =
+                    await wishlistService
+                        .removeFromWishlist(
+                            productId
+                        );
+
+
+                setWishlist(
+                    current =>
+                        current.filter(
+                            product =>
+                                product._id !==
+                                productId
+                        )
+                );
+
+
+                return response.data;
+
+            },
+            []
+        );
+
+
+    const isInWishlist =
+        useCallback(
+            productId => {
+
+                return wishlist.some(
+                    product =>
+                        product._id ===
+                        productId
+                );
+
+            },
+            [
+                wishlist,
+            ]
         );
 
 
@@ -170,6 +331,21 @@ export function AuthProvider({
 
                 refreshUser,
 
+                wishlist,
+
+                wishlistLoading,
+
+                wishlistCount:
+                    wishlist.length,
+
+                refreshWishlist,
+
+                addWishlistItem,
+
+                removeWishlistItem,
+
+                isInWishlist,
+
             }),
             [
                 user,
@@ -178,6 +354,12 @@ export function AuthProvider({
                 register,
                 logout,
                 refreshUser,
+                wishlist,
+                wishlistLoading,
+                refreshWishlist,
+                addWishlistItem,
+                removeWishlistItem,
+                isInWishlist,
             ]
         );
 

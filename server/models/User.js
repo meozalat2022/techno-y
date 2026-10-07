@@ -68,6 +68,15 @@ const userSchema = new mongoose.Schema(
                 default: 0,
             },
         },
+        wishlist: [
+    {
+        type:
+            mongoose.Schema.Types.ObjectId,
+
+        ref:
+            "Product",
+    },
+],
 
         passwordResetToken: {
             type: String,

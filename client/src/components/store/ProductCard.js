@@ -1,13 +1,21 @@
-import Link from "next/link";
+"use client";
 
+
+import {
+    useState,
+} from "react";
+
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
     ShoppingCart,
     ImageOff,
+    Heart,
 } from "lucide-react";
 
 import SafeImage from
     "@/components/store/SafeImage";
-
 
 import formatCurrency from
     "@/utils/formatCurrency";
@@ -15,15 +23,37 @@ import formatCurrency from
 import getOnlineAvailableQuantity from
     "@/utils/getOnlineAvailableQuantity";
 
+import { useAuth } from
+    "@/context/AuthContext";
+import { useToast } from
+    "@/context/ToastContext";
 
 export default function ProductCard({
     product,
 }) {
+const router = useRouter();
+    const {
+        isAuthenticated,
+        addWishlistItem,
+        removeWishlistItem,
+        isInWishlist,
+    } =
+        useAuth();
+    const {
+        showToast,
+    } =
+        useToast();
+
+    const [
+        wishlistActionLoading,
+        setWishlistActionLoading,
+    ] =
+        useState(false);
 
     const hasSale =
         Number(product.salePrice) > 0 &&
         Number(product.salePrice) <
-            Number(product.regularPrice);
+        Number(product.regularPrice);
 
 
     const price =
@@ -46,6 +76,91 @@ export default function ProductCard({
         onlineAvailableQuantity <=
         0;
 
+
+    const productInWishlist =
+        isInWishlist(
+            product._id
+        );
+
+
+    const handleWishlistClick =
+        async event => {
+
+            event.preventDefault();
+
+            event.stopPropagation();
+
+
+           if (!isAuthenticated) {
+    const returnTo =
+        `${window.location.pathname}${window.location.search}`;
+
+    router.push(
+        `/account/login?next=${encodeURIComponent(returnTo)}`
+    );
+
+    return;
+}
+
+
+            if (
+                wishlistActionLoading
+            ) {
+
+                return;
+
+            }
+
+
+            setWishlistActionLoading(
+                true
+            );
+
+
+            try {
+
+                if (
+                    productInWishlist
+                ) {
+
+                    await removeWishlistItem(
+                        product._id
+                    );
+
+
+                    showToast(
+                        "تمت إزالة المنتج من المفضلة"
+                    );
+
+                } else {
+
+                    await addWishlistItem(
+                        product._id
+                    );
+
+
+                    showToast(
+                        "تمت إضافة المنتج إلى المفضلة"
+                    );
+
+                }
+
+            } catch {
+
+                showToast(
+                    "حدث خطأ، حاول مرة أخرى",
+                    "error"
+                );
+
+            } finally {
+
+                setWishlistActionLoading(
+                    false
+                );
+
+            }
+
+        };
 
     return (
 
@@ -111,9 +226,11 @@ export default function ProductCard({
                                     text-[#B8AFA2]
                                 "
                             >
+
                                 <ImageOff
                                     size={42}
                                 />
+
                             </div>
 
                         )
@@ -167,6 +284,75 @@ export default function ProductCard({
                     )
                 }
 
+
+                {
+                    
+                    (
+                        <button
+                            type="button"
+                            onClick={
+                                handleWishlistClick
+                            }
+                            disabled={
+                                wishlistActionLoading
+                            }
+                            aria-label={
+                                productInWishlist
+                                    ? "إزالة من المفضلة"
+                                    : "إضافة إلى المفضلة"
+                            }
+                            className="
+                                absolute
+                                left-3
+                                top-3
+                                z-10
+                                flex
+                                h-10
+                                w-10
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-white/95
+                                shadow-sm
+                                transition
+                                hover:scale-105
+                                disabled:cursor-not-allowed
+disabled:opacity-60
+                            "
+                        >
+
+                            {
+                                wishlistActionLoading
+                                    ? (
+                                        <span
+                                            className="
+                    h-5
+                    w-5
+                    animate-spin
+                    rounded-full
+                    border-2
+                    border-[#D9D0C3]
+                    border-t-[#1F4E5F]
+                "
+                                        />
+                                    )
+                                    : (
+                                        <Heart
+                                            size={20}
+                                            strokeWidth={2}
+                                            className={
+                                                productInWishlist
+                                                    ? "fill-[#C94A45] text-[#C94A45]"
+                                                    : "text-[#6F675D]"
+                                            }
+                                        />
+                                    )
+                            }
+
+                        </button>
+                    )
+                }
+
             </Link>
 
 
@@ -185,6 +371,7 @@ export default function ProductCard({
                         text-[#918C84]
                     "
                 >
+
                     {
                         product.category
                             ?.name ||
@@ -196,6 +383,7 @@ export default function ProductCard({
                             ? ` • ${product.brand.name}`
                             : ""
                     }
+
                 </div>
 
 
@@ -231,11 +419,13 @@ export default function ProductCard({
                             text-[#252525]
                         "
                     >
+
                         {
                             formatCurrency(
                                 price
                             )
                         }
+
                     </div>
 
 
@@ -251,12 +441,14 @@ export default function ProductCard({
                                     line-through
                                 "
                             >
+
                                 {
                                     formatCurrency(
                                         product
                                             .regularPrice
                                     )
                                 }
+
                             </div>
 
                         )
