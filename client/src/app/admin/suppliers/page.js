@@ -151,7 +151,7 @@ export default function SuppliersPage() {
 
 
                     setPagination(
-                        response.pagination ||
+                        response.meta  ||
                         {
                             page: 1,
                             limit: 20,

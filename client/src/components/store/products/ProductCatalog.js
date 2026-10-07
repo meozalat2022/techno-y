@@ -354,7 +354,7 @@ export default function ProductCatalog() {
 
 
                     setPagination(
-                        response.pagination ||
+                        response.meta ||
                         {
                             page: 1,
                             limit:

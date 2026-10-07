@@ -159,7 +159,7 @@ export default function InventoryPage() {
 
 
                     setPagination(
-                        response.pagination ||
+                        response.meta ||
                         {
                             page: 1,
                             pages: 1,

@@ -198,7 +198,7 @@ export default function SupplierReturnsPage() {
 
 
                     setPagination(
-                        response.pagination ||
+                        response.meta ||
                         {
                             page: 1,
                             pages: 1,

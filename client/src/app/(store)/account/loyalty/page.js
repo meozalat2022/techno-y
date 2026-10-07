@@ -37,7 +37,7 @@ export default function LoyaltyPage() {
             ]);
             setSummary(summaryResponse.data);
             setTransactions(transactionsResponse.data || []);
-            setPagination(transactionsResponse.pagination || { page: 1, pages: 1 });
+            setPagination(transactionsResponse.meta || { page: 1, pages: 1 });
         } catch (error) {
             setError(error.response?.data?.message || "تعذر تحميل بيانات نقاطك.");
         } finally { setLoading(false); }

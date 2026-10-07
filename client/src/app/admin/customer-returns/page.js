@@ -180,7 +180,7 @@ export default function CustomerReturnsPage() {
 
 
                     setPagination(
-                        response.pagination ||
+                        response.meta ||
                         {
                             page: 1,
                             pages: 1,

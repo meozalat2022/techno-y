@@ -189,7 +189,7 @@ export default function ProductsPage() {
 
 
                     setPagination(
-                        response.pagination ||
+                        response.meta ||
                         {
                             page: 1,
                             limit: PRODUCTS_PER_PAGE,
