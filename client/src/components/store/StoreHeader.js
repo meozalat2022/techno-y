@@ -263,7 +263,11 @@ export default function StoreHeader() {
                                 sm:text-2xl
                             "
                         >
-                            تكنو-واي
+                           <img
+    src="/logo.webp"
+    alt="تكنو-واي - قطع غيار الأجهزة المنزلية"
+    className="h-14 w-auto object-contain"
+/>
                         </Link>
 
 

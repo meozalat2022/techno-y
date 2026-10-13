@@ -33,7 +33,7 @@ async function getAllProducts() {
             Math.max(
                 1,
                 Number(
-                    response.pagination
+                    response.meta
                         ?.pages
                 ) || 1
             );

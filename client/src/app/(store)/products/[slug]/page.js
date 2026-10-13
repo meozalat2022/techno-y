@@ -44,120 +44,63 @@ const getProduct =
     };
 
 
-export async function generateMetadata({
-    params,
-}) {
+export async function generateMetadata({ params }) {
+    const { slug } = await params;
 
-    const {
-        slug,
-    } =
-        await params;
-
-
-    const product =
-        await getProduct(
-            slug
-        );
-
+    const product = await getProduct(slug);
 
     if (!product) {
-
         return {
-
-            title:
-                "المنتج غير موجود",
-
+            title: "المنتج غير موجود",
             robots: {
-                index:
-                    false,
-                follow:
-                    false,
+                index: false,
+                follow: false,
             },
-
         };
-
     }
 
-
-    const title =
-        product.seoTitle ||
-        product.title;
-
+    const title = product.seoTitle || product.title;
 
     const description =
         product.seoDescription ||
         product.description ||
         `اشتري ${product.title} من تكنو-واي لقطع غيار الأجهزة المنزلية.`;
 
+    const image = product.images?.[0]?.url || "/og-image.png";
 
-    const image =
-        product.images?.[0]
-            ?.url;
-
+    const canonical = `/products/${product.slug}`;
 
     return {
-
         title,
-
         description,
 
         alternates: {
-
-            canonical:
-                `/products/${product.slug}`,
-
+            canonical,
         },
 
         openGraph: {
-
-            title:
-                `${title} | تكنو-واي`,
-
+            type: "website",
+            locale: "ar_EG",
+            siteName: "تكنو-واي",
+            title: `${title} | تكنو-واي`,
             description,
-
-            url:
-                `/products/${product.slug}`,
-
-            type:
-                "website",
-
-            images:
-                image
-                    ? [
-                        {
-                            url:
-                                image,
-                            alt:
-                                product.title,
-                        },
-                    ]
-                    : [],
-
+            url: canonical,
+            images: [
+                {
+                    url: image,
+                    alt: product.title,
+                },
+            ],
         },
 
         twitter: {
-
-            card:
-                "summary_large_image",
-
-            title:
-                `${title} | تكنو-واي`,
-
+            card: "summary_large_image",
+            title: `${title} | تكنو-واي`,
             description,
-
-            images:
-                image
-                    ? [
-                        image,
-                    ]
-                    : [],
-
+            images: [image],
         },
-
     };
-
 }
-
 
 export default async function ProductDetailsPage({
     params,

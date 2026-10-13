@@ -45,7 +45,6 @@ const promotionSchema = new mongoose.Schema(
     }
 );
 
-promotionSchema.index({ code: 1 }, { unique: true });
 promotionSchema.index({ isActive: 1, startsAt: 1, expiresAt: 1 });
 
 module.exports = mongoose.model("Promotion", promotionSchema);
