@@ -87,7 +87,8 @@ const validateEnv = () => {
         "MAIL_PORT",
         "MAIL_USER",
         "MAIL_PASS",
-        "MAIL_TO",
+        "MAIL_SALES_TO",
+        "MAIL_INFO_TO",
 
         "OPAY_MODE",
         "OPAY_RETURN_URL",

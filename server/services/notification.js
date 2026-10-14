@@ -39,20 +39,15 @@ const formatDate = value =>
     );
 
 
+
 const createTransporter = () =>
     nodemailer.createTransport({
-        host:
-            process.env.MAIL_HOST,
-        port:
-            Number(
-                process.env.MAIL_PORT
-            ) || 587,
-        secure: false,
+        host: process.env.MAIL_HOST,
+        port: Number(process.env.MAIL_PORT) || 465,
+        secure: Number(process.env.MAIL_PORT) === 465,
         auth: {
-            user:
-                process.env.MAIL_USER,
-            pass:
-                process.env.MAIL_PASS,
+            user: process.env.MAIL_USER,
+            pass: process.env.MAIL_PASS,
         },
     });
 
@@ -522,7 +517,7 @@ const sendEmail = async ({
         !process.env.MAIL_HOST ||
         !process.env.MAIL_USER ||
         !process.env.MAIL_PASS ||
-        !process.env.MAIL_TO
+        !process.env.MAIL_SALES_TO
     ) {
         throw new Error(
             "Mail configuration is incomplete."
@@ -538,7 +533,7 @@ const sendEmail = async ({
         from:
             `"Techno-Y" <${process.env.MAIL_USER}>`,
         to:
-            process.env.MAIL_TO,
+            process.env.MAIL_SALES_TO,
         subject,
         text,
         html,

@@ -8,9 +8,7 @@ const sendPasswordResetEmail = async ({
     const transporter =
         nodemailer.createTransport({
             host: process.env.MAIL_HOST,
-            port: Number(
-                process.env.MAIL_PORT || 587
-            ),
+            port: Number(process.env.MAIL_PORT) || 465,
             secure:
                 Number(
                     process.env.MAIL_PORT

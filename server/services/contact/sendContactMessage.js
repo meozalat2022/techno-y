@@ -22,31 +22,17 @@ const sendContactMessage = async ({
     message,
 }) => {
 
-    const transporter =
-        nodemailer.createTransport({
+    
+const transporter = nodemailer.createTransport({
+    host: process.env.MAIL_HOST,
+    port: Number(process.env.MAIL_PORT) || 465,
+    secure: Number(process.env.MAIL_PORT) === 465,
+    auth: {
+        user: process.env.MAIL_USER,
+        pass: process.env.MAIL_PASS,
+    },
+});
 
-            host:
-                process.env.MAIL_HOST,
-
-            port:
-                Number(
-                    process.env.MAIL_PORT
-                ) || 587,
-
-            secure:
-                false,
-
-            auth: {
-
-                user:
-                    process.env.MAIL_USER,
-
-                pass:
-                    process.env.MAIL_PASS,
-
-            },
-
-        });
 
 
     const safeName =
@@ -75,7 +61,7 @@ const sendContactMessage = async ({
             `"Techno-Y Website" <${process.env.MAIL_USER}>`,
 
         to:
-            process.env.MAIL_TO,
+            process.env.MAIL_INFO_TO,
 
         replyTo:
             email || undefined,

@@ -461,7 +461,7 @@ export default function ContactPageClient() {
                         >
 
                             <a
-                                href="mailto:techno-y@hotmail.com"
+                                href="mailto:info@techno-y.com"
                                 dir="ltr"
                                 className="
                                     break-all
@@ -470,7 +470,7 @@ export default function ContactPageClient() {
                                     hover:text-[#6B6862]
                                 "
                             >
-                                techno-y@hotmail.com
+                                info@techno-y.com
                             </a>
 
                         </ContactCard>
